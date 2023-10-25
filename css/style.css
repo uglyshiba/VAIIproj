@@ -1,0 +1,50 @@
+@font-face {
+    font-family: GumballFont;
+    src: url("../resources/fonts/Gumball.ttf") format("truetype");
+}
+
+h1 {
+    text-align: center;
+    font-family: GumballFont, serif;
+}
+
+@media screen {
+    body{
+        background-color: #4BC6E3;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .navbar{
+        flex-direction: column;
+    }
+}
+
+.navbar {
+    display: flex;
+    flex-direction: row;
+    border: thick black;
+    padding-top: 0;
+}
+
+.navbar-item{
+    background: #049bbf;
+    flex-grow: 1;
+    text-align: center;
+    font-family: GumballFont, serif;
+    font-size: 200%;
+    border: 2px solid #000;
+    text-decoration: none;
+    color:inherit;
+    padding-top: 0px;
+}
+
+header{
+    background-color: #0468bf;
+    color: lightgreen;
+    padding-bottom: 0px;
+}
+
+nav{
+    padding-top: 0px;
+}
