@@ -42,11 +42,22 @@ h1 {
 }
 
 header{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
     background-color: #0468bf;
-    color: lightgreen;
-    padding-bottom: 0;
+    -webkit-text-stroke: 0.2px black;
 }
 
 nav{
-    padding-top: 0;
+    position:relative;
+}
+
+footer{
+    background-color: #f792ed;
+    border-top: black solid 3px;
+    bottom: 0;
+    position: fixed;
+    width: 100%;
 }

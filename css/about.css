@@ -1,0 +1,47 @@
+body{
+    background-color: #4BC6E3;
+}
+
+#gumball-char{
+    background-color: #48AFC0;
+}
+
+#darwin-char{
+    background-color: #C3561E;
+}
+
+#nicole-char{
+    background-color: #44B3FF;
+}
+
+.panel-title{
+    border: black;
+}
+
+.container{
+    border: black;
+}
+
+.character-sheet{
+    display:flex;
+    flex-direction: row;
+    background-color: inherit;
+    justify-content: center;
+    align-items: center;
+}
+
+.character-text{
+    display:flex;
+    flex:2;
+}
+
+.character-image {
+    flex: 1;
+    display: flex;
+    align-items: center; /* Center the image horizontally */
+    justify-content: center; /* Center the image vertically */
+    max-width: 400px;
+    max-height: 800px;
+    padding:20px;
+}
+
