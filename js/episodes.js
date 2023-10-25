@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const episodeLinks = document.querySelectorAll('.sidebar-episodes-item');
 
     const backButton = document.getElementById('back-to-title-button');
-    const containerWidth = document.querySelector('.sidebar-episodes').clientWidth;
 
     episodeLinks.forEach((link) => {
         link.textContent = link.getAttribute('data-video-name');
