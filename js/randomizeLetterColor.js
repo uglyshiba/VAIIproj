@@ -7,11 +7,10 @@ function randomizeLetterColor(elementId) {
     if (element) {
         var text = element.textContent;
         element.style.color = getRandomColor(); // Set initial text color
-        var changedText = text.split('').map(function(letter) {
+        element.innerHTML = text.split('').map(function (letter) {
             var randomColor = getRandomColor();
             return '<span style="color:' + randomColor + ';">' + letter + '</span>';
         }).join('');
-        element.innerHTML = changedText;
     }
 }
 
@@ -20,6 +19,5 @@ function getRandomColor() {
     var randGreen = Math.floor(Math.random() * 220 + 20);
     var randBlue = Math.floor(Math.random() * 200 + 20);
 
-    var color = 'rgb(' + randRed + ',' + randGreen + ',' + randBlue + ')';
-    return color;
+    return 'rgb(' + randRed + ',' + randGreen + ',' + randBlue + ')';
 }
