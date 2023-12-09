@@ -1,0 +1,29 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+input{
+    display: block;
+    margin-bottom: 2vh;
+}
+form{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+.uploadContainer {
+    display: block;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.registerButton{
+    grid-column: span 2;
+}
+

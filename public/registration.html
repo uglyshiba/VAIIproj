@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="css/register.css" type="text/css">
+</head>
+<body>
+<form action="/register" enctype="multipart/form-data" method="post">
+    <div>
+        <label for="registrationUsername">Username</label>
+        <input type="text" id="registrationUsername" required>
+        <label for="registrationEmail">Registration e-mail</label>
+        <input type="text" id="registrationEmail" required>
+        <label for="registrationPassword">Password</label>
+        <input type="password" id="registrationPassword" required>
+        <label for="passwordAgain">Repeat password</label>
+        <input type="password" id="passwordAgain" required>
+    </div>
+
+    <div class="uploadContainer">
+        <label for="customProfilePicture">Profile picture</label>
+        <input type="file" id="customProfilePicture" accept="image/*" onchange="changeImage()">
+        <img id="registerProfilePicture" src="resources/images/default-pfp.jpg" alt="default profile picture">
+    </div>
+    <button type="submit" class="registerButton">Register</button>
+</form>
+<script src="js/registration.js"></script>
+</body>
+</html>

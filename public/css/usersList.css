@@ -1,0 +1,32 @@
+/* usersList.css */
+body{
+    margin: auto;
+}
+
+.user-list {
+    display: grid;
+    grid-template-columns: 1fr; /* Single column layout */
+    background-color:#4b79e3;
+    margin-left: 0;
+}
+
+.user {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: center;
+    border: 2px solid black;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+
+}
+
+img {
+    max-width: 100%;
+    border-radius: 50%;
+}
+
+span.username {
+    font-size: 1.2em;
+    font-weight: bold;
+}

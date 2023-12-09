@@ -1,0 +1,26 @@
+body {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+}
+
+button{
+    display:block;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 25vh;
+    padding: 5px;
+    margin-bottom: 15px;
+}
+
+button {
+    display:block;
+    width: 10vh;
+    place-items: center;
+}
