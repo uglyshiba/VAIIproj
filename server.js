@@ -140,27 +140,31 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
 
 app.put('/update/:id', async(req, res) => {
     const userId = req.params.id;
+    console.log(req.body);
     const {username, email, password, profilePicture} = req.body;
     try{
         let updateUserQuery = 'UPDATE users SET';
         let updateEmailQuery = 'UPDATE emails SET';
+        const whereUserQuery = `WHERE id = ${userId}`;
+        const whereEmailQuery = `WHERE userId = ${userId}`;
         let successMessage = '';
         if(username) {
-            updateUserQuery += ` username = ${username},`;
+            updateUserQuery += ` username = '${username}' ,`;
         }
         if(password) {
-            updateUserQuery += ` username = ${password},`;
+            updateUserQuery += ` password = '${password}' ,`;
         }
         if(profilePicture) {
-            updateUserQuery += ` profilePicture = ${profilePicture},`;
+            updateUserQuery += ` profilePicture = '${profilePicture}' ,`;
         }
         if(email) {
-            updateEmailQuery += ` email = ${email},`;
+            updateEmailQuery += ` email = '${email}' ,`;
         }
 
         if(updateUserQuery.endsWith(',')) {
             updateUserQuery = updateUserQuery.slice(0,-1);
-            await runTransactionQuery('TRANSACTION');
+            updateUserQuery += whereUserQuery;
+            await runTransactionQuery('BEGIN TRANSACTION');
             await runChangeQuery(updateUserQuery);
             await runTransactionQuery('COMMIT')
             successMessage += 'User updated successfully. ';
@@ -168,7 +172,8 @@ app.put('/update/:id', async(req, res) => {
 
         if(updateEmailQuery.endsWith(',')) {
             updateEmailQuery = updateEmailQuery.slice(0, -1);
-            await runTransactionQuery('TRANSACTION');
+            updateEmailQuery += whereEmailQuery;
+            await runTransactionQuery('BEGIN TRANSACTION');
             await runChangeQuery(updateEmailQuery);
             await runTransactionQuery('COMMIT');
             successMessage += 'Email updated successfully'

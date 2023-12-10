@@ -27,6 +27,9 @@ function deleteUser(userId) {
     })
 }
 
+function updateUser(userId) {
+    window.location.href = `/update.html?userId=${userId}`;
+}
 function displayAllUsers(users) {
     const sortedUsers = users.sort((a,b) => a.username.localeCompare(b.username));
     const elUsersList = document.getElementById('usersList');

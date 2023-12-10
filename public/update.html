@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="css/register.css" type="text/css">
+</head>
+<body>
+
+<form action="/update/:id" enctype="multipart/form-data" method="put">
+    <div>
+        <span>Update your profile. Only the fields that are filled will be changed</span>
+        <span id="updateFeedback"></span>
+        <br>
+        <label for="updateUsername">Username</label>
+        <input type="text" id="updateUsername">
+        <label for="updateEmail">Registration e-mail</label>
+        <input type="text" id="updateEmail">
+        <label for="updatePassword">Password</label>
+        <input type="password" id="updatePassword">
+        <label for="passwordAgain">Repeat password</label>
+        <input type="password" id="passwordAgain">
+        <button type="submit" class="updateButton">Update profile</button>
+    </div>
+</form>
+<script src="js/update.js"></script>
+</body>
+</html>
