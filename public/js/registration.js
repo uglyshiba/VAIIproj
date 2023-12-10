@@ -24,8 +24,8 @@ function changeImage() {
         const newImage = new Image();
         newImage.onload = function () {
             image.src = resizeImage(newImage);
-            image.width = 200;
-            image.height = 200;
+            image.width = 100;
+            image.height = 100;
         };
         newImage.src = blob;
     }
@@ -35,9 +35,9 @@ function resizeImage (image) {
     if(image) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = 200;
-        canvas.height = 200;
-        ctx.drawImage(image, 0, 0, 200, 200);
+        canvas.width = 100;
+        canvas.height = 100;
+        ctx.drawImage(image, 0, 0, 100, 100);
         return canvas.toDataURL('image/jpeg', 1.0);
     } else {
         throw new Error("Image to resize is null");
@@ -63,9 +63,14 @@ async function registerUser() {
             body: formData
         });
 
+        const feedback = document.getElementById("registerFeedback");
         if(res.ok) {
-            const result = await res.json();
-            console.log(result);
+            feedback.textContent="Registration successful!";
+            feedback.style.color = "green";
+        } else {
+            const errorData = await res.json();
+            feedback.textContent = errorData.error;
+            feedback.style.color = "red";
         }
     } catch (err) {
         console.error(err);

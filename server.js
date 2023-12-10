@@ -109,7 +109,7 @@ const firstUser = {
 app.post('/register', upload.single('profilePicture'), async (req, res) => {
     const { username, password, email } = req.body;
     const profilePicture = req.file.buffer;
-
+    res.setHeader('Content-type', 'application/json');
     // Convert the binary data to a buffer
     let success = false;
 
@@ -123,18 +123,19 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
         await runInsertQuery(insertEmailQuery, [email, userId]);
 
         await runTransactionQuery('COMMIT');
-        success = true;
+        res.status(200).json({success: 'User registered successfully'});
 
     } catch (err) {
         console.error(err);
         await runTransactionQuery('ROLLBACK').catch(rollbackErr => {
             console.error('Rollback failed: ', rollbackErr);
         });
-    } finally {
-        if (success) {
-            res.status(200).send('User registered successfully');
+        if(err.message.includes('username')) {
+            res.status(400).json({error: 'Username already exists'});
+        } else if(err.message.includes('email')) {
+            res.status(400).json({error: 'Email is already taken'});
         } else {
-            res.status(500).send('Internal server error');
+            res.status(400).json({error: 'Something got very wrong during checking uniqueness of username and email'});
         }
     }
 });
