@@ -47,32 +47,39 @@ function resizeImage (image) {
 async function registerUser() {
     const username = document.getElementById("registrationUsername").value;
     const password = document.getElementById("registrationPassword").value;
+    const passwordAgain = document.getElementById("passwordAgain").value;
     const email = document.getElementById("registrationEmail").value;
 
-    try{
-        const profilePicture = document.getElementById("customProfilePicture").files[0];
+    const feedback = document.getElementById("registerFeedback");
 
-        const formData = new FormData();
-        formData.append('username', username);
-        formData.append('password', password);
-        formData.append('email', email);
-        formData.append('profilePicture', profilePicture);
+    if(password !== passwordAgain) {
+        feedback.textContent = "Passwords are not matching";
+        feedback.style.color = "red";
+    } else {
+        try{
+            const profilePicture = document.getElementById("customProfilePicture").files[0];
 
-        const res = await fetch('http://localhost:3000/register', {
-            method: 'POST',
-            body: formData
-        });
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('email', email);
+            formData.append('profilePicture', profilePicture);
 
-        const feedback = document.getElementById("registerFeedback");
-        if(res.ok) {
-            feedback.textContent="Registration successful!";
-            feedback.style.color = "green";
-        } else {
-            const errorData = await res.json();
-            feedback.textContent = errorData.error;
-            feedback.style.color = "red";
+            const res = await fetch('http://localhost:3000/register', {
+                method: 'POST',
+                body: formData
+            });
+
+            if(res.ok) {
+                feedback.textContent="Registration successful!";
+                feedback.style.color = "green";
+            } else {
+                const errorData = await res.json();
+                feedback.textContent = errorData.error;
+                feedback.style.color = "red";
+            }
+        } catch (err) {
+            console.error(err);
         }
-    } catch (err) {
-        console.error(err);
     }
 }

@@ -31,7 +31,7 @@ const runTransactionQuery = (query) => {
         });
     });
 };
-const runInsertQuery = (query, values) => {
+const runChangeQuery = (query, values) => {
     return new Promise((resolve, reject) => {
         db.run(query, values, function (err) {
             if (err) {
@@ -110,17 +110,15 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
     const { username, password, email } = req.body;
     const profilePicture = req.file.buffer;
     res.setHeader('Content-type', 'application/json');
-    // Convert the binary data to a buffer
-    let success = false;
 
     try {
         await runTransactionQuery('BEGIN TRANSACTION');
 
-        const insertUser = await runInsertQuery(insertUserQuery, [username, password, profilePicture]);
+        const insertUser = await runChangeQuery(insertUserQuery, [username, password, profilePicture]);
 
         const userId = insertUser.lastID;
 
-        await runInsertQuery(insertEmailQuery, [email, userId]);
+        await runChangeQuery(insertEmailQuery, [email, userId]);
 
         await runTransactionQuery('COMMIT');
         res.status(200).json({success: 'User registered successfully'});
@@ -179,6 +177,35 @@ app.get('/users/:id?', async (req, res) => {
     } catch(err) {
         console.error(error);
         res.status(500).send('Error retrieving user(s)');
+    }
+})
+
+app.delete('/users/:id', async (req, res) => {
+    const userId = req.params.id;
+
+    try{
+        await runTransactionQuery('BEGIN TRANSACTION');
+
+        const deleteEmailQuery = `
+            DELETE FROM emails WHERE userId = ?
+        `
+
+        await runChangeQuery(deleteEmailQuery, [userId]);
+
+        const deleteUserQuery = `
+            DELETE FROM users WHERE id = ?
+        `
+
+        await runChangeQuery(deleteUserQuery, [userId]);
+
+        await runTransactionQuery('COMMIT');
+        res.status(200).json({success : 'User deleted succesfully'});
+
+    } catch (err) {
+        await runTransactionQuery('ROLLBACK').catch(rollbackErr => {
+            console.error('Rollback failed: ', rollbackErr);
+        });
+        res.status(500).json({ error: err });
     }
 })
 

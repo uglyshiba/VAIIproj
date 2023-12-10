@@ -12,7 +12,7 @@ body{
 
 .user {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr 1fr auto auto;
     gap: 10px;
     align-items: center;
     border: 2px solid black;
@@ -26,7 +26,22 @@ img {
     height: 100px;
 }
 
-span.username {
-    font-size: 1.2em;
-    font-weight: bold;
+.delete-button,
+.update-button {
+    /* Updated the class names to match JavaScript */
+    background-size: cover;
+    width: 30px; /* Adjust as needed */
+    height: 30px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    justify-self: end;
+}
+
+.delete-button {
+    background-image: url("../resources/icons/icons8-delete-64.png");
+}
+
+.update-button {
+    background-image: url("../resources/icons/icons8-update-64.png");
 }
