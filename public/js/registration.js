@@ -4,14 +4,9 @@ document.addEventListener('DOMContentLoaded', function () {
         defaultProfilePicture.src = resizeImage(defaultProfilePicture);
     }
 
-    const form = document.querySelector('form');
-    if(form) {
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            registerUser();
-        });
-    }
+    document.getElementById('registerButton').addEventListener("click", () => {
+        registerUser();
+    })
 })
 
 
@@ -57,15 +52,17 @@ async function registerUser() {
         feedback.style.color = "red";
     } else {
         try{
-            const profilePicture = document.getElementById("customProfilePicture").files[0];
-
+            let profilePicture = document.getElementById("customProfilePicture").files[0];
+            if(!profilePicture) {
+                profilePicture = document.getElementById("defaultProfilePicture").files[0];
+            }
             const formData = new FormData();
             formData.append('username', username);
             formData.append('password', password);
             formData.append('email', email);
             formData.append('profilePicture', profilePicture);
 
-            const res = await fetch('http://localhost:3000/register', {
+            const res = await fetch('/register', {
                 method: 'POST',
                 body: formData
             });

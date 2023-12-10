@@ -1,14 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.querySelector('form');
-    if(form) {
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('userId');
+    document.getElementById('updateButton').addEventListener("click", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
 
-            updateUser(userId);
-        });
-    }
+        updateUser(userId);
+    })
 });
 
 async function updateUser(userId) {

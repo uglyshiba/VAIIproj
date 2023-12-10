@@ -8,7 +8,6 @@
 </head>
 <body>
 
-<form action="/update/:id" enctype="multipart/form-data" method="put">
     <div>
         <span>Update your profile. Only the fields that are filled will be changed</span>
         <span id="updateFeedback"></span>
@@ -21,9 +20,8 @@
         <input type="password" id="updatePassword">
         <label for="passwordAgain">Repeat password</label>
         <input type="password" id="passwordAgain">
-        <button type="submit" class="updateButton">Update profile</button>
+        <button type="submit" class="updateButton" id="updateButton">Update profile</button>
     </div>
-</form>
 <script src="js/update.js"></script>
 </body>
 </html>
