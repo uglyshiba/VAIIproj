@@ -1,8 +1,12 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
+const multer = require('multer');
 const app = express();
 app.use(express.static('public'));
 app.use(express.json());
+
+const storage = multer.memoryStorage();
+const upload = multer({storage: storage});
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'http://localhost:63342');
@@ -102,9 +106,9 @@ const firstUser = {
 };
 
 
-app.post('/register', async (req, res) => {
+app.post('/register', upload.single('profilePicture'), async (req, res) => {
     const { username, password, email } = req.body;
-    const profilePicture = Buffer.from(req.body.profilePicture, 'base64');
+    const profilePicture = req.file.buffer;
 
     // Convert the binary data to a buffer
     let success = false;
@@ -157,9 +161,19 @@ app.get('/users/:id?', async (req, res) => {
                 SELECT users.id, users.username, users.profilePicture, emails.email FROM users
                 JOIN emails ON users.id = emails.userId
             `;
+
             const allUsers = await runSelectQuery(getAllUsersQuery);
 
-            res.status(200).json(allUsers);
+            const usersWithBase64 = allUsers.map(user => {
+                return {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    profilePicture: user.profilePicture.toString('base64')
+                };
+            });
+
+            res.status(200).json(usersWithBase64);
         }
     } catch(err) {
         console.error(error);

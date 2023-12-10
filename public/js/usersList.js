@@ -24,11 +24,12 @@ function displayAllUsers(users) {
         listItem.classList.add('user');
 
         const pfp = document.createElement('img');
-        const blob = new Blob([user.profilePicture], { type: 'image/jpeg' });
-        pfp.src = URL.createObjectURL(blob);
+        //const blob = new Blob([user.profilePicture], { type: 'image/jpeg' });
+        pfp.src = 'data:image/jpeg;base64,' + user.profilePicture.toString('base64');
 
-        console.log('Blob:', blob);
-        console.log('Blob URL:', URL.createObjectURL(blob));
+
+        //console.log('Blob:', blob);
+        //console.log('Blob URL:', URL.createObjectURL(blob));
 
 
         const userName = document.createElement('span');
