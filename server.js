@@ -138,6 +138,57 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
     }
 });
 
+app.put('/update/:id', async(req, res) => {
+    const userId = req.params.id;
+    const {username, email, password, profilePicture} = req.body;
+    try{
+        let updateUserQuery = 'UPDATE users SET';
+        let updateEmailQuery = 'UPDATE emails SET';
+        let successMessage = '';
+        if(username) {
+            updateUserQuery += ` username = ${username},`;
+        }
+        if(password) {
+            updateUserQuery += ` username = ${password},`;
+        }
+        if(profilePicture) {
+            updateUserQuery += ` profilePicture = ${profilePicture},`;
+        }
+        if(email) {
+            updateEmailQuery += ` email = ${email},`;
+        }
+
+        if(updateUserQuery.endsWith(',')) {
+            updateUserQuery = updateUserQuery.slice(0,-1);
+            await runTransactionQuery('TRANSACTION');
+            await runChangeQuery(updateUserQuery);
+            await runTransactionQuery('COMMIT')
+            successMessage += 'User updated successfully. ';
+        }
+
+        if(updateEmailQuery.endsWith(',')) {
+            updateEmailQuery = updateEmailQuery.slice(0, -1);
+            await runTransactionQuery('TRANSACTION');
+            await runChangeQuery(updateEmailQuery);
+            await runTransactionQuery('COMMIT');
+            successMessage += 'Email updated successfully'
+        }
+        res.status(200).json({ success: successMessage});
+
+    } catch (err) {
+        await runTransactionQuery('ROLLBACK').catch(rollbackErr => {
+            console.error('Rollback failed: ' + rollbackErr);
+        })
+        if(err.message.includes('username')) {
+            res.status(400).json({error: 'Username already exists'});
+        } else if(err.message.includes('email')) {
+            res.status(400).json({error: 'Email is already taken'});
+        } else {
+            res.status(400).json({error: 'Something got very wrong during updating username or email'});
+        }
+    }
+})
+
 app.get('/users/:id?', async (req, res) => {
     const userId = req.params.id;
 
