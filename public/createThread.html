@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="./css/style.css" type="text/css">
     <link rel="stylesheet" href="./css/banner.css" type="text/css">
     <link rel="stylesheet" href="./css/createThread.css" type="text/css">
+    <script src="./js/createThread.js" defer></script>
     <title>Title</title>
 </head>
 <body>
@@ -14,10 +15,10 @@
         <div class="new-thread">
             <div class="thread-header">Create a New Thread</div>
             <div class="thread-name">Thread name</div>
-            <div class="thread-name-input"><input type="text" placeholder="Enter thread name"></div>
-            <div class="thread-text"><textarea placeholder="Enter thread description"></textarea></div>
+            <div class="thread-name-input"><input type="text" id="thread-name-input" placeholder="Enter thread name"></div>
+            <div class="thread-text"><textarea id="thread-text-input" placeholder="Enter thread description"></textarea></div>
             <div class="back-button"><a href="javascript:history.back()">Go back</a></div>
-            <button class="submit-button">Create thread</button>
+            <button class="submit-button" id="create-thread-button">Create thread</button>
         </div>
 </body>
 </html>

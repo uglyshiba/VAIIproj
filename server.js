@@ -25,6 +25,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'http://localhost:63342');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Credentials', 'true');
     next();
 });
 
@@ -97,18 +98,7 @@ const createTableEmails= `
     )
 `;
 
-const createTableThreads = `
-    CREATE TABLE IF NOT EXISTS thread (
-        thread_id INT PRIMARY KEY AUTO_INCREMENT,
-        title VARCHAR(255),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        last_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        creator INTEGER,
-        last_user_posted INTEGER,
-        FOREIGN KEY (creator) REFERENCES users(id),
-        FOREIGN KEY (last_user_posted) REFERENCES users(id)
-    )
-`;
+
 
 const insertIntoTableThreads = `
     INSERT INTO thread (title, creator)
@@ -139,9 +129,23 @@ const insertEmailQuery = `
     VALUES(?, ?)
 `;
 
+const createTableThreads = `
+    CREATE TABLE IF NOT EXISTS thread (
+        thread_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        creator INTEGER,
+        last_user_posted INTEGER,
+        FOREIGN KEY (creator) REFERENCES users(id),
+        FOREIGN KEY (last_user_posted) REFERENCES users(id)
+    )
+`;
+
 const insertThreadQuery = `
-    INSERT INTO threads (title, )
-`
+    INSERT INTO thread (title, created_at, last_posted, creator, last_user_posted)
+    VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)
+`;
 
 db.run(createTableUsers, (err) => {
     if(err) {
@@ -156,6 +160,14 @@ db.run(createTableEmails, (err) => {
         console.error(err);
     } else {
         console.log('Emails table created succesfully');
+    }
+})
+
+db.run(createTableThreads, (err) => {
+    if(err) {
+        console.error(err);
+    } else {
+        console.log('Threads table created succesfully');
     }
 })
 
@@ -175,7 +187,7 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
     try {
         const encryptedPassword = await encryptPassword(password);
 
-        await runTransactionQuery('BEGIN TRANSACTION');
+        await runTransactionQuery('BEGIN');
 
         const insertUser = await runChangeQuery(insertUserQuery, [username, encryptedPassword, profilePicture]);
 
@@ -226,6 +238,33 @@ app.post('/login', async(req, res) => {
     } catch {
         console.error(err);
         res.status(500).json({error: 'Internal server error'});
+    }
+})
+
+const requireLogin = (req, res, next) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Only logged in users can create threads' });
+    }
+    next();
+};
+app.post('/create-thread', requireLogin, async(req, res) => {
+    const {threadName, threadText} = req.body;
+
+    try{
+
+        const {id: userId, user:username} =req.session.user;
+        await runTransactionQuery('BEGIN');
+
+        const createThreadResult = await runChangeQuery(insertThreadQuery, [threadName, userId, userId]);
+
+        await runTransactionQuery('COMMIT');
+        res.status(200).json({success: 'Thread created successfully'});
+
+    } catch (err) {
+        console.log(err);
+        await runTransactionQuery('ROLLBACK');
+        res.status(500).json({success: 'Failed to create thread'});
+        //res.status(501).json({error: 'Internal server error during thread creation'});
     }
 })
 
