@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const defaultProfilePicture = document.getElementById("registerProfilePicture")
+    const defaultProfilePicture = document.getElementById("registerProfilePicture");
     if(defaultProfilePicture) {
         defaultProfilePicture.src = resizeImage(defaultProfilePicture);
     }
@@ -62,7 +62,7 @@ async function registerUser() {
             formData.append('email', email);
             formData.append('profilePicture', profilePicture);
 
-            const res = await fetch('/register', {
+            const res = await fetch('http://localhost:3000/register', {
                 method: 'POST',
                 body: formData
             });

@@ -6,13 +6,16 @@
 h1 {
     text-align: center;
     font-family: GumballFont, serif;
+    margin-top: 0;
+    margin-bottom: 0;
     border-width: 1px;
     border-color: black;
 }
 
 @media screen {
     body{
-        background-color: #4BC6E3;
+        background-color: black;
+        font-family: Arial, sans-serif;
     }
 }
 
@@ -27,6 +30,7 @@ h1 {
     flex-direction: row;
     border: thick black;
     padding-top: 0;
+    margin-top:0;
 }
 
 .navbar-item{
@@ -42,12 +46,19 @@ h1 {
 }
 
 header{
-    position:fixed;
+    position:relative;
     left:0;
     top:0;
     width:100%;
+    margin-top: 0;
     background-color: #0468bf;
     -webkit-text-stroke: 0.2px black;
+}
+
+main{
+    position:relative;
+    margin-top: 1em;
+    overflow-y:scroll;
 }
 
 nav{

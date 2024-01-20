@@ -4,28 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Title</title>
-    <link rel="stylesheet" href="css/style.css" type="text/css">
-    <script src="js/randomizeLetterColor.js"></script>
+    <link rel="stylesheet" href="./css/banner.css" type="text/css">
+    <link rel="stylesheet" href="./css/thread.css" type="text/css">
+    <link rel="stylesheet" href="./css/style.css" type="text/css">
+    <script src="./js/randomizeLetterColor.js"></script>
 </head>
 
 <body>
 <header>
-    <h1 id="nadpis">Welcome to my site</h1>
+    <h1 id="nadpis">Gumball forum</h1>
+    <script src="./js/banner.js"></script>
     <nav>
         <div class="navbar">
-            <a href="episodes.html" class="navbar-item">Episodes</a>
-            <a href="about.html" class="navbar-item">About</a>
-            <a href="login.html" class="navbar-item">Log in</a>
-            <a href="usersList.html" class="navbar-item">Users</a>
+            <a href="./episodes.html" class="navbar-item">Episodes</a>
+            <a href="./about.html" class="navbar-item">About</a>
+            <a href="./login.html" class="navbar-item">Log in</a>
+            <a href="./usersList.html" class="navbar-item">Users</a>
         </div>
     </nav>
 </header>
 
-
-
-<footer>
-    <a href="#nadpis">Go back</a>
-</footer>
+<main>
+<div class="thread-container">
+    <div class="thread">
+        <h2 class="thread-title">Thread 1</h2>
+        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
+    </div>
+    <div class="thread">
+        <h2 class="thread-title">Thread 2</h2>
+        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
+    </div>
+    <div class="thread">
+        <h2 class="thread-title">Thread 3</h2>
+        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
+    </div>
+    <div class="thread">
+        <h2 class="thread-title">Thread 4</h2>
+        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
+    </div>
+    <div class="thread">
+        <h2 class="thread-title">Thread 5</h2>
+        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
+    </div>
+</div>
+</main>
 <script>
     randomizeLetterColor("#nadpis");
 </script>

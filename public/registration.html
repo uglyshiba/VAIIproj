@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Registration</title>
-    <link rel="stylesheet" href="css/style.css" type="text/css">
-    <link rel="stylesheet" href="css/register.css" type="text/css">
+    <link rel="stylesheet" href="./css/style.css" type="text/css">
+    <link rel="stylesheet" href="./css/register.css" type="text/css">
 </head>
 <body>
 
@@ -23,12 +23,12 @@
     </div>
 
     <div class="uploadContainer">
-        <label for="customProfilePicture">Profile picture</label>
+        <p>Your new profile picture<p>
+        <img id="registerProfilePicture" src="resources/images/default-pfp.jpg" alt="default profile picture">
         <input type="file" id="customProfilePicture" accept="image/*" onchange="changeImage()">
-        <img id="defaultProfilePicture" src="resources/images/default-pfp.jpg" alt="default profile picture">
     </div>
     <button type="submit" class="registerButton" id="registerButton">Register</button>
 
-<script src="js/registration.js"></script>
+<script src="./js/registration.js"></script>
 </body>
 </html>

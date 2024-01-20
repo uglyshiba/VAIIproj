@@ -1,0 +1,38 @@
+
+
+.thread-container {
+    display: block;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    background-color: inherit;
+    margin: auto;
+    width: 80vw;
+    justify-content: space-around;
+}
+
+.thread {
+    border: 2px solid #08adff;
+    border-radius: 2em;
+    background-color: #7de2fa;
+    max-height: 7vw;
+    min-height: 3vw;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.thread-title {
+    font-size: 1.5cqw;
+    margin-top: 1.5cqh;
+    margin-left: 1.5cqw;
+    margin-bottom: 0.5cqh;
+}
+
+.last-message {
+    margin-left: 3cqw;
+    margin-right: 3cqw;
+    font-size: 1cqw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

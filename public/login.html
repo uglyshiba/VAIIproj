@@ -2,22 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="css/style.css" type="text/css">
-    <link rel="stylesheet" href="css/login.css" type="text/css">
+    <link rel="stylesheet" href="./css/style.css" type="text/css">
+    <link rel="stylesheet" href="./css/login.css" type="text/css">
     <title>Sign in</title>
 </head>
 <body>
-<form>
     <label for="username">Username: </label>
     <input type="text" id="username" name="username" required>
 
     <label for="password">Password</label>
     <input type="password" id="password" name="password" required>
 
-    <button type="submit">Sign in</button>
+    <button type="submit" id="submitButton">Sign in</button>
 
-    <p>Don't have an account? <a href="registration.html">Register here</a></p>
-</form>
+    <p>Don't have an account? <a href="./registration.html">Register here</a></p>
+<script src="./js/login.js"></script>
 </body>
-<footer><a href="index.html">Go back</a></footer>
+<footer><a href="./index.html">Go back</a></footer>
 </html>

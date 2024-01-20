@@ -1,9 +1,22 @@
 const express = require('express');
+const session = require('express-session');
 const sqlite3 = require('sqlite3');
 const multer = require('multer');
+const bcrypt = require('bcrypt');
+
 const app = express();
 app.use(express.static('public'));
 app.use(express.json());
+app.use(session({
+    secret: 'secret-key',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: 3600000
+    }
+}))
 
 const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
@@ -54,6 +67,18 @@ const runSelectQuery = (query, values) => {
     });
 };
 
+const encryptPassword = (password) => {
+    return new Promise((resolve, reject) => {
+        bcrypt.hash(password, 10, (err, encryptedPassword) => {
+            if(err) {
+                reject(err);
+            } else {
+                resolve(encryptedPassword);
+            }
+        })
+    })
+}
+
 const createTableUsers = `
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY,
@@ -72,6 +97,38 @@ const createTableEmails= `
     )
 `;
 
+const createTableThreads = `
+    CREATE TABLE IF NOT EXISTS thread (
+        thread_id INT PRIMARY KEY AUTO_INCREMENT,
+        title VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        creator INTEGER,
+        last_user_posted INTEGER,
+        FOREIGN KEY (creator) REFERENCES users(id),
+        FOREIGN KEY (last_user_posted) REFERENCES users(id)
+    )
+`;
+
+const insertIntoTableThreads = `
+    INSERT INTO thread (title, creator)
+    VALUES (?, ?)
+`;
+
+const createTablePost = `
+    CREATE TABLE IF NOT EXISTS post (
+        post_id INT PRIMARY KEY AUTO_INCREMENT,
+        text VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        creator INTEGER,
+        FOREIGN KEY (creator) REFERENCES users(id)
+    )
+`
+
+const insertIntoTablePost = `
+    INSERT INTO post(text, creator)
+`;
+
 const insertUserQuery = `
     INSERT INTO users (username, password, profilePicture)
     VALUES(?, ?, ?)
@@ -81,6 +138,10 @@ const insertEmailQuery = `
     INSERT INTO emails (email, userId)
     VALUES(?, ?)
 `;
+
+const insertThreadQuery = `
+    INSERT INTO threads (title, )
+`
 
 db.run(createTableUsers, (err) => {
     if(err) {
@@ -112,9 +173,11 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
     res.setHeader('Content-type', 'application/json');
 
     try {
+        const encryptedPassword = await encryptPassword(password);
+
         await runTransactionQuery('BEGIN TRANSACTION');
 
-        const insertUser = await runChangeQuery(insertUserQuery, [username, password, profilePicture]);
+        const insertUser = await runChangeQuery(insertUserQuery, [username, encryptedPassword, profilePicture]);
 
         const userId = insertUser.lastID;
 
@@ -135,6 +198,43 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
         } else {
             res.status(400).json({error: 'Something got very wrong during checking uniqueness of username and email'});
         }
+    }
+});
+
+app.post('/login', async(req, res) => {
+    const {username, password} = req.body;
+
+    try{
+        const query = 'SELECT * FROM users WHERE username=?';
+        const searchResult = await runSelectQuery(query, [username]);
+        if(searchResult.length < 1) {
+            res.status(404).json({error: 'User not found'});
+        } else {
+            const passwordMatch = await bcrypt.compare(password, searchResult[0].password);
+
+            if(passwordMatch) {
+                req.session.user = {
+                    id: searchResult[0].id,
+                    user: searchResult[0].username,
+                    isAdmin: searchResult[0].isAdmin
+                }
+                res.status(200).json({success: 'Login successful!'});
+            } else {
+                res.status(401).json({error: 'Wrong password'});
+            }
+        }
+    } catch {
+        console.error(err);
+        res.status(500).json({error: 'Internal server error'});
+    }
+})
+
+app.get('/renew-session', (req, res) => {
+    if (req.session.user) {
+        req.session.touch();
+        res.status(200).json({ success: 'Session renewed successfully' });
+    } else {
+        res.status(400).json({ error: 'Session does not exist' });
     }
 });
 

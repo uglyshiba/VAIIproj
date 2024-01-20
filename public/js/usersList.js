@@ -1,5 +1,5 @@
 function fetchAllUsers() {
-    fetch('/users').then(res => {
+    fetch('http://localhost:3000/users').then(res => {
         if(res.ok) {
             return res.json();
         } else {
@@ -13,7 +13,7 @@ function fetchAllUsers() {
 }
 
 function deleteUser(userId) {
-    fetch(`/users/${userId}`, {
+    fetch(`http://localhost:3000/users/${userId}`, {
         method: 'DELETE',
     }).then(res => {
         if(res.ok) {
@@ -28,7 +28,7 @@ function deleteUser(userId) {
 }
 
 function updateUser(userId) {
-    window.location.href = `/update.html?userId=${userId}`;
+    window.location.href = `http://localhost:3000/update.html?userId=${userId}`;
 }
 function displayAllUsers(users) {
     const sortedUsers = users.sort((a,b) => a.username.localeCompare(b.username));
