@@ -3,6 +3,7 @@ const session = require('express-session');
 const sqlite3 = require('sqlite3');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
+const uuid = require('uuid');
 
 const app = express();
 app.use(express.static('public'));
@@ -80,66 +81,45 @@ const encryptPassword = (password) => {
     })
 }
 
-const createTableUsers = `
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
-        username TEXT UNIQUE,        
+const createTableUser = `
+    CREATE TABLE IF NOT EXISTS user (
+        id TEXT PRIMARY KEY,    
+        username TEXT UNIQUE,
         password TEXT,
-        profilePicture LONGBLOB,
-        isAdmin BOOLEAN              
+        profile_picture BLOB,
+        is_admin BOOLEAN
     )
 `;
 
-const createTableEmails= `
-    CREATE TABLE IF NOT EXISTS emails (
+const createTableEmail = `
+    CREATE TABLE IF NOT EXISTS email (
         email TEXT PRIMARY KEY,
-        userId INTEGER,
-        FOREIGN KEY (userId) REFERENCES users(id)
-    )
-`;
-
-
-
-const insertIntoTableThreads = `
-    INSERT INTO thread (title, creator)
-    VALUES (?, ?)
-`;
-
-const createTablePost = `
-    CREATE TABLE IF NOT EXISTS post (
-        post_id INT PRIMARY KEY AUTO_INCREMENT,
-        text VARCHAR(255),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        creator INTEGER,
-        FOREIGN KEY (creator) REFERENCES users(id)
-    )
-`
-
-const insertIntoTablePost = `
-    INSERT INTO post(text, creator)
+        user_id TEXT,
+        FOREIGN KEY (user_id) REFERENCES user(id)
+        )
 `;
 
 const insertUserQuery = `
-    INSERT INTO users (username, password, profilePicture)
-    VALUES(?, ?, ?)
+    INSERT INTO user (id, username, password, profile_picture)
+    VALUES(?, ?, ?, ?)
 `;
 
 const insertEmailQuery = `
-    INSERT INTO emails (email, userId)
+    INSERT INTO email (email, user_id)
     VALUES(?, ?)
 `;
 
-const createTableThreads = `
+const createTableThread = `
     CREATE TABLE IF NOT EXISTS thread (
-        thread_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         title VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         last_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        creator INTEGER,
-        last_user_posted INTEGER,
-        FOREIGN KEY (creator) REFERENCES users(id),
-        FOREIGN KEY (last_user_posted) REFERENCES users(id)
-    )
+        creator TEXT,
+        last_user_posted TEXT,
+        FOREIGN KEY (creator) REFERENCES user(id),
+        FOREIGN KEY (last_user_posted) REFERENCES user(id)
+        )
 `;
 
 const insertThreadQuery = `
@@ -147,7 +127,24 @@ const insertThreadQuery = `
     VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)
 `;
 
-db.run(createTableUsers, (err) => {
+const createTableComment = `
+    CREATE TABLE IF NOT EXISTS comment (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        text VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        creator TEXT,
+        thread INTEGER,
+        FOREIGN KEY (creator) REFERENCES user(id),
+        FOREIGN KEY (thread) REFERENCES thread(id)
+        )
+`
+
+const insertIntoTableComment = `
+    INSERT INTO comment(text, created_at, creator, thread)
+    VALUES(?, CURRENT_TIMESTAMP, ?, ?)
+`;
+
+db.run(createTableUser, (err) => {
     if(err) {
         console.error(err);
     } else {
@@ -155,7 +152,7 @@ db.run(createTableUsers, (err) => {
     }
 })
 
-db.run(createTableEmails, (err) => {
+db.run(createTableEmail, (err) => {
     if(err) {
         console.error(err);
     } else {
@@ -163,7 +160,7 @@ db.run(createTableEmails, (err) => {
     }
 })
 
-db.run(createTableThreads, (err) => {
+db.run(createTableThread, (err) => {
     if(err) {
         console.error(err);
     } else {
@@ -171,13 +168,13 @@ db.run(createTableThreads, (err) => {
     }
 })
 
-const firstUser = {
-    username: 'uglyshiba',
-    email: 'uglyshiba@example.com',
-    password: '1234',
-    isAdmin: false
-};
-
+db.run(createTableComment, (err) => {
+    if(err) {
+        console.error(err);
+    } else {
+        console.log('Comments table created succesfully');
+    }
+})
 
 app.post('/register', upload.single('profilePicture'), async (req, res) => {
     const { username, password, email } = req.body;
@@ -189,58 +186,55 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
 
         await runTransactionQuery('BEGIN');
 
-        const insertUser = await runChangeQuery(insertUserQuery, [username, encryptedPassword, profilePicture]);
-
-        const userId = insertUser.lastID;
-
-        await runChangeQuery(insertEmailQuery, [email, userId]);
+        const uid = uuid.v4();
+        const insertUser = await runChangeQuery(insertUserQuery, [uid, username, encryptedPassword, profilePicture]);
+        await runChangeQuery(insertEmailQuery, [email, uid]);
 
         await runTransactionQuery('COMMIT');
-        res.status(200).json({success: 'User registered successfully'});
+        res.status(200).json({ success: 'User registered successfully' });
 
     } catch (err) {
         console.error(err);
         await runTransactionQuery('ROLLBACK').catch(rollbackErr => {
             console.error('Rollback failed: ', rollbackErr);
         });
-        if(err.message.includes('username')) {
-            res.status(400).json({error: 'Username already exists'});
-        } else if(err.message.includes('email')) {
-            res.status(400).json({error: 'Email is already taken'});
+        if (err.message.includes('username')) {
+            res.status(400).json({ error: 'Username already exists' });
+        } else if (err.message.includes('email')) {
+            res.status(400).json({ error: 'Email is already taken' });
         } else {
-            res.status(400).json({error: 'Something got very wrong during checking uniqueness of username and email'});
+            res.status(400).json({ error: 'Something got very wrong during checking uniqueness of username and email' });
         }
     }
 });
 
-app.post('/login', async(req, res) => {
-    const {username, password} = req.body;
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
 
-    try{
-        const query = 'SELECT * FROM users WHERE username=?';
+    try {
+        const query = 'SELECT * FROM user WHERE username=?';
         const searchResult = await runSelectQuery(query, [username]);
-        if(searchResult.length < 1) {
-            res.status(404).json({error: 'User not found'});
+        if (searchResult.length < 1) {
+            res.status(404).json({ error: 'User not found' });
         } else {
             const passwordMatch = await bcrypt.compare(password, searchResult[0].password);
 
-            if(passwordMatch) {
+            if (passwordMatch) {
                 req.session.user = {
                     id: searchResult[0].id,
                     user: searchResult[0].username,
-                    isAdmin: searchResult[0].isAdmin
-                }
-                res.status(200).json({success: 'Login successful!'});
+                    isAdmin: searchResult[0].is_admin
+                };
+                res.status(200).json({ success: 'Login successful!' });
             } else {
-                res.status(401).json({error: 'Wrong password'});
+                res.status(401).json({ error: 'Wrong password' });
             }
         }
-    } catch {
+    } catch (err) {
         console.error(err);
-        res.status(500).json({error: 'Internal server error'});
+        res.status(500).json({ error: 'Internal server error' });
     }
-})
-
+});
 const requireLogin = (req, res, next) => {
     if (!req.session.user) {
         return res.status(401).json({ error: 'Only logged in users can create threads' });
@@ -249,7 +243,6 @@ const requireLogin = (req, res, next) => {
 };
 app.post('/create-thread', requireLogin, async(req, res) => {
     const {threadName, threadText} = req.body;
-
     try{
 
         const {id: userId, user:username} =req.session.user;
@@ -268,6 +261,57 @@ app.post('/create-thread', requireLogin, async(req, res) => {
     }
 })
 
+app.post('/thread/:id/create-comment', requireLogin, async (req, res) => {
+    const threadId = req.params.id;
+    const { text } = req.body;
+
+    try {
+        const { id: userId } = req.session.user;
+
+        await runTransactionQuery('BEGIN');
+
+        // Check if 'create-comment' query parameter is present
+        if (req.query.createComment) {
+            // Insert the comment into the post table
+            const insertCommentResult = await runChangeQuery(insertIntoTableComment, [text, userId, threadId]);
+
+            const updateThreadQuery = `
+                UPDATE thread
+                SET last_user_posted = ?,
+                    last_posted = CURRENT_TIMESTAMP
+                WHERE thread_id = ?;
+            `;
+            await runChangeQuery(updateThreadQuery, [userId, threadId]);
+
+            await runTransactionQuery('COMMIT');
+
+            res.status(200).json({
+                success: 'Comment created successfully'
+            });
+        } else {
+            const fetchThreadPathQuery = `
+                SELECT thread_id, title
+                FROM thread
+                WHERE thread_id = ?;
+            `;
+            const fetchThreadPathResult = await runSelectQuery(fetchThreadPathQuery, [threadId]);
+            const threadPath = fetchThreadPathResult[0];
+
+            await runTransactionQuery('COMMIT');
+
+            res.status(200).json({
+                success: 'Thread information retrieved successfully',
+                threadPath: threadPath
+            });
+        }
+
+    } catch (err) {
+        console.log(err);
+        await runTransactionQuery('ROLLBACK');
+        res.status(500).json({ error: 'Failed to process request' });
+    }
+});
+
 app.get('/renew-session', (req, res) => {
     if (req.session.user) {
         req.session.touch();
@@ -282,10 +326,10 @@ app.put('/update/:id', async(req, res) => {
     console.log(req.body);
     const {username, email, password, profilePicture} = req.body;
     try{
-        let updateUserQuery = 'UPDATE users SET';
-        let updateEmailQuery = 'UPDATE emails SET';
+        let updateUserQuery = 'UPDATE user SET';
+        let updateEmailQuery = 'UPDATE email SET';
         const whereUserQuery = `WHERE id = ${userId}`;
-        const whereEmailQuery = `WHERE userId = ${userId}`;
+        const whereEmailQuery = `WHERE user_id = ${userId}`;
         let successMessage = '';
         if(username) {
             updateUserQuery += ` username = '${username}' ,`;
@@ -294,7 +338,7 @@ app.put('/update/:id', async(req, res) => {
             updateUserQuery += ` password = '${password}' ,`;
         }
         if(profilePicture) {
-            updateUserQuery += ` profilePicture = '${profilePicture}' ,`;
+            updateUserQuery += ` profile_picture = '${profilePicture}' ,`;
         }
         if(email) {
             updateEmailQuery += ` email = '${email}' ,`;
@@ -333,15 +377,15 @@ app.put('/update/:id', async(req, res) => {
     }
 })
 
-app.get('/users/:id?', async (req, res) => {
-    const userId = req.params.id;
+app.get('/users/:username?', async (req, res) => {
+    const userId = req.params.username;
 
     try{
         if(userId) {
             const getUserQuery = `
-            SELECT users.id, users.username, emails.email FROM users
-            LEFT JOIN emails ON users.id = emails.userId
-            WHERE users.id = ?
+            SELECT user.id, user.username, email.email FROM user
+            LEFT JOIN email ON user.id = email.user_id
+            WHERE user.id = ?
         `;
             const user = await runSelectQuery(getUserQuery, [userId]);
 
@@ -352,8 +396,8 @@ app.get('/users/:id?', async (req, res) => {
             }
         } else {
             const getAllUsersQuery = `
-                SELECT users.id, users.username, users.profilePicture, emails.email FROM users
-                JOIN emails ON users.id = emails.userId
+                SELECT user.id, user.username, user.profile_picture, email.email FROM user
+                JOIN email ON user.id = email.user_id
             `;
 
             const allUsers = await runSelectQuery(getAllUsersQuery);
@@ -363,7 +407,7 @@ app.get('/users/:id?', async (req, res) => {
                     id: user.id,
                     username: user.username,
                     email: user.email,
-                    profilePicture: user.profilePicture.toString('base64')
+                    profilePicture: user.profile_picture.toString('base64')
                 };
             });
 
@@ -382,7 +426,7 @@ app.delete('/users/:id', async (req, res) => {
         await runTransactionQuery('BEGIN TRANSACTION');
 
         const deleteEmailQuery = `
-            DELETE FROM emails WHERE userId = ?
+            DELETE FROM emails WHERE user_id = ?
         `
 
         await runChangeQuery(deleteEmailQuery, [userId]);
