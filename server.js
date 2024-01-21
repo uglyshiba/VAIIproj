@@ -4,6 +4,7 @@ const sqlite3 = require('sqlite3');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
+const sharp = require('sharp');
 
 const app = express();
 app.use(express.static('public'));
@@ -186,8 +187,12 @@ app.post('/register', upload.single('profilePicture'), async (req, res) => {
 
         await runTransactionQuery('BEGIN');
 
+        const resizedImageBuffer = await sharp(profilePicture)
+            .resize({ width: 100, height: 100, fit: sharp.fit.inside })
+            .toBuffer();
+
         const uid = uuid.v4();
-        const insertUser = await runChangeQuery(insertUserQuery, [uid, username, encryptedPassword, profilePicture]);
+        const insertUser = await runChangeQuery(insertUserQuery, [uid, username, encryptedPassword, resizedImageBuffer]);
         await runChangeQuery(insertEmailQuery, [email, uid]);
 
         await runTransactionQuery('COMMIT');
@@ -235,12 +240,50 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 const requireLogin = (req, res, next) => {
     if (!req.session.user) {
-        return res.status(401).json({ error: 'Only logged in users can create threads' });
+        return res.status(401).json({ error: 'User is not logged in' });
     }
     next();
 };
+
+
+app.post('/logout', requireLogin, (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            res.status(500).json({ error: 'Internal Server Error during logout'});
+        } else {
+            res.status(200).json({ success: 'Logout successful' });
+        }
+    });
+});
+
+app.get('/check-login', requireLogin, async (req, res) => {
+    try{
+        const searchUserQuery = `
+        SELECT username, profile_picture FROM user
+        WHERE id = ?
+        `;
+
+        const searchUserResult = await runSelectQuery(searchUserQuery, [req.session.user.id])
+
+        if(searchUserResult.length > 0) {
+            res.status(200).json({
+                username: searchUserResult[0].username,
+                profilePicture: searchUserResult[0].profile_picture.toString('base64')
+            });
+        } else {
+            res.status(404).json({ error: 'During checking of login session, user was not found'});
+        }
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error during checking user login session'});
+    }
+});
+
 app.post('/create-thread', requireLogin, async(req, res) => {
     const {threadName, threadText} = req.body;
     try{
@@ -289,12 +332,12 @@ app.post('/thread/:id/create-comment', requireLogin, async (req, res) => {
                 success: 'Comment created successfully'
             });
         } else {
-            const fetchThreadPathQuery = `
+            const searchThreadQuery = `
                 SELECT thread_id, title
                 FROM thread
                 WHERE thread_id = ?;
             `;
-            const fetchThreadPathResult = await runSelectQuery(fetchThreadPathQuery, [threadId]);
+            const fetchThreadPathResult = await runSelectQuery(searchThreadQuery, [threadId]);
             const threadPath = fetchThreadPathResult[0];
 
             await runTransactionQuery('COMMIT');

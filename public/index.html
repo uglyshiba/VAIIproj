@@ -18,7 +18,7 @@
         <div class="navbar">
             <a href="./episodes.html" class="navbar-item">Episodes</a>
             <a href="./about.html" class="navbar-item">About</a>
-            <a href="./login.html" class="navbar-item">Log in</a>
+            <a href="./login.html" class="navbar-item" id="login-link">Log in</a>
             <a href="./usersList.html" class="navbar-item">Users</a>
             <a href="./createThread.html" class="navbar-item">Create thread</a>
         </div>
@@ -51,6 +51,25 @@
 </main>
 <script>
     randomizeLetterColor("#nadpis");
+</script>
+<script type="module">
+    import { checkLoginStatus, displayUserProfile } from './js/checkSession.js';
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await checkLoginStatus();
+            const loginLink = document.getElementById('login-link');
+
+            if (response) {
+                // User is logged in, update link to Profile
+                loginLink.textContent = 'Profile';
+                //loginLink.href = './profile.html';  // Change to the appropriate profile page URL
+                // Display user profile information above the banner
+                displayUserProfile(response);
+            }
+        } catch (err) {
+            console.error('Error checking login status:', err);
+        }
+    });
 </script>
 </body>
 </html>
