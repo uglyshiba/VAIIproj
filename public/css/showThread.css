@@ -1,0 +1,27 @@
+.thread-container {
+    display: flex;
+    background-color: #08adff;
+    flex-direction: column; /* Stack child elements vertically */
+    align-items: center; /* Center children horizontally */
+    width: 80%;
+    margin: 0 auto; /* Center the container on the page */
+}
+
+
+.comment-container {
+    display: grid;
+    height:auto;
+    width: 100%;
+    grid-template-columns: 0.7fr 1.3fr;
+    grid-template-rows: 0.3fr 1fr 1.7fr;
+    gap: 0% 0px;
+    grid-template-areas:
+    ". date-created"
+    "profile-picture comment-text"
+    "name comment-text";
+    align-items: center;
+}
+.date-created { grid-area: date-created; }
+.profile-picture { grid-area: profile-picture; }
+.name { grid-area: name; }
+.comment-text { grid-area: comment-text; }

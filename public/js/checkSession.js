@@ -24,6 +24,7 @@ const checkLoginStatus = async () => {
 const displayUserProfile = (userData) => {
     const profileContainer = document.createElement('div');
     profileContainer.id = 'profile-container';
+    profileContainer.style.backgroundColor = '#08adff';
 
     const profileName = document.createElement('span');
     profileName.textContent = `Welcome, ${userData.username}!`;
@@ -55,7 +56,7 @@ const displayUserProfile = (userData) => {
     profileContainer.appendChild(pfp);
     profileContainer.appendChild(logoutButton);
 
-    const banner = document.getElementById('nadpis');
+    const banner = document.getElementById('banner');
     banner.parentNode.insertBefore(profileContainer, banner);
 };
 

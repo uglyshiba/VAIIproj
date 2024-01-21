@@ -1,5 +1,9 @@
 document.write(`
     <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+        }
         .banner-container {
             position: relative;
             width: 100%;
@@ -11,8 +15,9 @@ document.write(`
             background-repeat: no-repeat;
             background-position: center;
             overflow: hidden;
+            background-color: #08adff;
         }
     </style>
 
-    <a href="./index.html"> <div class="banner-container"></div> </a>
+    <a href="./index.html"> <div id ="banner"  class="banner-container"></div> </a>
 `);

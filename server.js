@@ -140,7 +140,7 @@ const createTableComment = `
         )
 `
 
-const insertIntoTableComment = `
+const insertCommentQuery = `
     INSERT INTO comment(text, created_at, creator, thread)
     VALUES(?, CURRENT_TIMESTAMP, ?, ?)
 `;
@@ -292,6 +292,8 @@ app.post('/create-thread', requireLogin, async(req, res) => {
         await runTransactionQuery('BEGIN');
 
         const createThreadResult = await runChangeQuery(insertThreadQuery, [threadName, userId, userId]);
+        const threadId = createThreadResult.lastID;
+        await runChangeQuery(insertCommentQuery, [threadText, userId, threadId]);
 
         await runTransactionQuery('COMMIT');
         res.status(200).json({success: 'Thread created successfully'});
@@ -300,7 +302,6 @@ app.post('/create-thread', requireLogin, async(req, res) => {
         console.log(err);
         await runTransactionQuery('ROLLBACK');
         res.status(500).json({success: 'Failed to create thread'});
-        //res.status(501).json({error: 'Internal server error during thread creation'});
     }
 })
 
@@ -310,13 +311,8 @@ app.post('/thread/:id/create-comment', requireLogin, async (req, res) => {
 
     try {
         const { id: userId } = req.session.user;
-
         await runTransactionQuery('BEGIN');
-
-        // Check if 'create-comment' query parameter is present
-        if (req.query.createComment) {
-            // Insert the comment into the post table
-            const insertCommentResult = await runChangeQuery(insertIntoTableComment, [text, userId, threadId]);
+            const insertCommentResult = await runChangeQuery(insertCommentQuery, [text, userId, threadId]);
 
             const updateThreadQuery = `
                 UPDATE thread
@@ -331,29 +327,51 @@ app.post('/thread/:id/create-comment', requireLogin, async (req, res) => {
             res.status(200).json({
                 success: 'Comment created successfully'
             });
-        } else {
-            const searchThreadQuery = `
-                SELECT thread_id, title
-                FROM thread
-                WHERE thread_id = ?;
-            `;
-            const fetchThreadPathResult = await runSelectQuery(searchThreadQuery, [threadId]);
-            const threadPath = fetchThreadPathResult[0];
-
-            await runTransactionQuery('COMMIT');
-
-            res.status(200).json({
-                success: 'Thread information retrieved successfully',
-                threadPath: threadPath
-            });
-        }
-
     } catch (err) {
         console.log(err);
         await runTransactionQuery('ROLLBACK');
         res.status(500).json({ error: 'Failed to process request' });
     }
 });
+
+app.get('/thread/:id', async (req, res) => {
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+
+    const offset = (page - 1) * limit;
+    const threadId = req.params.id;
+
+    const searchThreadQuery = `
+            SELECT c.id as comment_id, c.text, c.created_at as comment_created_at, c.creator as comment_creator,
+                t.id as thread_id, t.title, t.created_at as thread_created_at,
+                u.username as creator_username, u.profile_picture as pfp
+            FROM comment c
+                JOIN thread t ON c.thread = t.id
+                JOIN user u ON c.creator = u.id
+            WHERE t.id = ?
+            ORDER BY c.created_at DESC
+            LIMIT 10 OFFSET ?;
+    `;
+
+    const fetchThreadResult = await runSelectQuery(searchThreadQuery, [threadId, offset]);
+
+    const threadResult = fetchThreadResult.map(row => ({
+        commentId: row.comment_id,
+        text: row.text,
+        commentCreatedAt: row.comment_created_at,
+        commentCreator: row.comment_creator,
+        threadId: row.thread_id,
+        title: row.title,
+        threadCreatedAt: row.thread_created_at,
+        creatorUsername: row.creator_username,
+        profilePicture: row.pfp.toString('base64')
+    }));
+
+    res.status(200).json({
+        success: 'Thread information retrieved successfully',
+        threadPath: threadResult
+    });
+})
 
 app.get('/renew-session', (req, res) => {
     if (req.session.user) {
