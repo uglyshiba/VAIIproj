@@ -38,8 +38,8 @@ body{
 .character-image {
     flex: 1;
     display: flex;
-    align-items: center; /* Center the image horizontally */
-    justify-content: center; /* Center the image vertically */
+    align-items: center;
+    justify-content: center;
     max-width: 400px;
     max-height: 800px;
     padding:20px;

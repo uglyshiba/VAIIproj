@@ -24,11 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                console.log(data.success); // Success message
-                // Redirect to the thread or perform any other necessary action
+                console.log(data.success);
             } else {
-                console.error(data.error); // Error message
-                // Handle the error appropriately (e.g., display an error message to the user)
+                console.error(data.error);
             }
         } catch (error) {
             console.error('Failed to create thread:', error);

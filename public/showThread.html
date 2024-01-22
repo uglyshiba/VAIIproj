@@ -8,56 +8,6 @@
     <title>Title</title>
 </head>
 <body>
-    <div class="thread-container">
-        <div class="comment-container"></div>
-    </div>
-    <script type="module">
-        import { checkLoginStatus, displayUserProfile } from './js/checkSession.js';
-
-        async function submitComment() {
-            const commentText = document.getElementById('commentText').value;
-
-            if (commentText.trim() !== '') {
-                // You can replace '4' with the actual thread ID
-                const threadId = 4;
-
-                try {
-                    const response = await fetch(`http://localhost:3000/thread/${threadId}/create-comment`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ text: commentText }),
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        await updatePage();
-                    } else {
-                        console.error('Error submitting comment:', data.error);
-                    }
-                } catch (err) {
-                    console.error('Error submitting comment:', err);
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const response = await checkLoginStatus();
-
-                if (response) {
-                    displayUserProfile(response);
-
-                    // Attach click event listener to the submit button
-                    const submitCommentBtn = document.getElementById('submitCommentBtn');
-                    submitCommentBtn.addEventListener('click', submitComment);
-                }
-            } catch (err) {
-                console.error('Error checking login status:', err);
-            }
-        });
-    </script>
+    <div class="thread-container"></div>
 </body>
 </html>

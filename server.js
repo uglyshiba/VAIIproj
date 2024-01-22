@@ -310,15 +310,15 @@ app.post('/thread/:id/create-comment', requireLogin, async (req, res) => {
     const { text } = req.body;
 
     try {
-        const { id: userId } = req.session.user;
+        const userId = req.session.user.id;
         await runTransactionQuery('BEGIN');
-            const insertCommentResult = await runChangeQuery(insertCommentQuery, [text, userId, threadId]);
+        const insertCommentResult = await runChangeQuery(insertCommentQuery, [text, userId, threadId]);
 
             const updateThreadQuery = `
                 UPDATE thread
                 SET last_user_posted = ?,
                     last_posted = CURRENT_TIMESTAMP
-                WHERE thread_id = ?;
+                WHERE id = ?;
             `;
             await runChangeQuery(updateThreadQuery, [userId, threadId]);
 
@@ -349,7 +349,7 @@ app.get('/thread/:id', async (req, res) => {
                 JOIN thread t ON c.thread = t.id
                 JOIN user u ON c.creator = u.id
             WHERE t.id = ?
-            ORDER BY c.created_at DESC
+            ORDER BY c.created_at ASC
             LIMIT 10 OFFSET ?;
     `;
 
@@ -372,6 +372,31 @@ app.get('/thread/:id', async (req, res) => {
         threadPath: threadResult
     });
 })
+
+app.get('/recent-threads', async (req, res) => {
+    try {
+        const recentThreadsQuery = `
+            SELECT threads.id as threadId, threads.title as threadName,
+                   comments.text as lastCommentText, users.username as lastCommentCreator
+            FROM thread threads
+                     LEFT JOIN (
+                SELECT thread, text, creator
+                FROM comment
+                ORDER BY created_at DESC
+                    LIMIT 1
+            ) comments ON threads.id = comments.thread
+                     LEFT JOIN user users ON comments.creator = users.id
+            ORDER BY threads.created_at DESC
+                LIMIT 10;
+        `;
+        const recentThreads = await runSelectQuery(recentThreadsQuery);
+
+        res.json({ success: true, recentThreads });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch recent threads' });
+    }
+});
 
 app.get('/renew-session', (req, res) => {
     if (req.session.user) {

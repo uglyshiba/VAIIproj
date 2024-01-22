@@ -9,9 +9,9 @@ document.write(`
             width: 100%;
             max-width: 100%;
             height: 0;
-            padding-bottom: 30%; /* Adjust based on the desired percentage */
+            padding-bottom: 30%;
             background-image: url('./resources/images/gum-banner.png');
-            background-size: 100% 100%; /* Make the image fill the entire width */
+            background-size: 100% 100%;
             background-repeat: no-repeat;
             background-position: center;
             overflow: hidden;

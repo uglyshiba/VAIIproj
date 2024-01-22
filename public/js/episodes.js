@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
     const videoImage = document.getElementById('video-image');
-    const videoName = document.querySelector('.video-name'); // Corrected the selector
+    const videoName = document.querySelector('.video-name');
     const episodeLinks = document.querySelectorAll('.sidebar-episodes-item');
 
     const backButton = document.getElementById('back-to-title-button');

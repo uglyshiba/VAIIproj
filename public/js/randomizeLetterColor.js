@@ -6,7 +6,7 @@ function randomizeLetterColor(elementId) {
     var element = document.getElementById(elementId);
     if (element) {
         var text = element.textContent;
-        element.style.color = getRandomColor(); // Set initial text color
+        element.style.color = getRandomColor();
         element.innerHTML = text.split('').map(function (letter) {
             var randomColor = getRandomColor();
             return '<span style="color:' + randomColor + ';">' + letter + '</span>';

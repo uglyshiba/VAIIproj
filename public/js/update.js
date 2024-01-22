@@ -31,7 +31,6 @@ async function updateUser(userId) {
                 method: 'PUT',
                 body: JSON.stringify(requestData),
                 headers: {
-                    // Ensure that this header is not overridden by default behavior
                     'Content-Type': 'application/json',
                 },
             });

@@ -42,13 +42,8 @@ function displayAllUsers(users) {
         listItem.classList.add('user');
 
         const pfp = document.createElement('img');
-        //const blob = new Blob([user.profilePicture], { type: 'image/jpeg' });
+
         pfp.src = 'data:image/jpeg;base64,' + user.profilePicture.toString('base64');
-
-
-        //console.log('Blob:', blob);
-        //console.log('Blob URL:', URL.createObjectURL(blob));
-
 
         const userName = document.createElement('span');
         userName.textContent = user.username;
@@ -60,7 +55,6 @@ function displayAllUsers(users) {
         deleteButton.classList.add('delete-button');
         deleteButton.addEventListener('click', () => deleteUser(user.id));
 
-        // Create update button
         const updateButton = document.createElement('button');
         updateButton.classList.add('update-button');
         updateButton.addEventListener('click', () => updateUser(user.id));

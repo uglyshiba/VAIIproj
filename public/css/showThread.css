@@ -1,27 +1,33 @@
 .thread-container {
     display: flex;
     background-color: #08adff;
-    flex-direction: column; /* Stack child elements vertically */
-    align-items: center; /* Center children horizontally */
+    flex-direction: column;
+    align-items: center;
     width: 80%;
-    margin: 0 auto; /* Center the container on the page */
+    margin: 0 auto;
 }
 
 
 .comment-container {
+    outline: #4b79e3 thick solid;
     display: grid;
     height:auto;
     width: 100%;
-    grid-template-columns: 0.7fr 1.3fr;
-    grid-template-rows: 0.3fr 1fr 1.7fr;
+    grid-template-columns: 0.2fr 1.8fr;
+    grid-template-rows: 0.5fr 2.5fr ;
     gap: 0% 0px;
     grid-template-areas:
-    ". date-created"
-    "profile-picture comment-text"
-    "name comment-text";
-    align-items: center;
+    "profile-picture date-created"
+    "name comment-text"
+    ". comment-text";
+    align-items: start;
 }
 .date-created { grid-area: date-created; }
-.profile-picture { grid-area: profile-picture; }
-.name { grid-area: name; }
+.profile-picture { grid-area: profile-picture;  align-self: start; justify-self: center; }
+.name { grid-area: name; align-self: start; justify-self: center;}
 .comment-text { grid-area: comment-text; }
+
+.profile-picture img {
+    display:grid;
+    place-items: center;
+}
