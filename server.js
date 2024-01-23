@@ -523,24 +523,31 @@ app.put('/update/:id', async(req, res) => {
 })
 
 app.get('/users/:username?', async (req, res) => {
-    const userId = req.params.username;
+    const username = req.params.username;
 
     try{
-        if(userId) {
-            if(userId === "defaultUserId") {
+        if(username) {
+            if(username === "Deleted profile") {
                 res.status(403).json({error: 'You should not have done that'});
             }
             const getUserQuery = `
-            SELECT user.id, user.username, email.email FROM user
+            SELECT user.id, user.username, user.profile_picture, email.email FROM user
             LEFT JOIN email ON user.id = email.user_id
-            WHERE user.id = ?
+            WHERE user.username = ?
         `;
-            const user = await runSelectQuery(getUserQuery, [userId]);
+            const user = await runSelectQuery(getUserQuery, [username]);
 
             if(user.length === 0) {
                 res.status(404).json({error: 'User not found'});
             } else {
-                res.status(200).json(user[0]);
+                const userWithBase64 = {
+                    id: user[0].id,
+                    username: user[0].username,
+                    email: user[0].email,
+                    profilePicture: user[0].profile_picture.toString('base64')
+                };
+
+                res.status(200).json(userWithBase64);
             }
         } else {
             const getAllUsersQuery = `

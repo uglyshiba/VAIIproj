@@ -29,10 +29,12 @@ const displayUserProfile = (userData) => {
     if(userData) {
         const profileContainer = document.createElement('div');
         profileContainer.id = 'profile-container';
-        profileContainer.style.backgroundColor = '#08adff';
+        profileContainer.style.backgroundImage = 'linear-gradient(to left, #4b79e3, #43C4DA, #FCB6B6)';
 
-        const profileName = document.createElement('span');
-        profileName.textContent = `Welcome, ${userData.username}!`;
+        const profileName = document.createElement('a');
+        profileName.textContent = `${userData.username}`;
+        // Set the href attribute to the user's profile page using the username
+        profileName.href = `./showProfile.html?username=${userData.username}`;
 
         const pfp = document.createElement('img');
         pfp.src = 'data:image/jpeg;base64,' + userData.profilePicture.toString('base64');

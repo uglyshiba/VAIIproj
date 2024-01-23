@@ -45,8 +45,10 @@ function displayAllUsers(users) {
 
         pfp.src = 'data:image/jpeg;base64,' + user.profilePicture.toString('base64');
 
-        const userName = document.createElement('span');
+        const userName = document.createElement('a');
         userName.textContent = user.username;
+        userName.href = `./showProfile.html?username=${user.username}`;
+
         const userEmail = document.createElement('span');
         userEmail.textContent = user.email;
         userEmail.classList.add('user-email');
