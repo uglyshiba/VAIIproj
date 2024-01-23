@@ -32,6 +32,8 @@ app.use((req, res, next) => {
 });
 
 
+
+
 const db = new sqlite3.Database('userDatabase.db');
 
 const PORT = 3000;

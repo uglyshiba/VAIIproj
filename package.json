@@ -2,7 +2,7 @@
   "name": "vaiiproj",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "jsServer/server.js",
   "scripts": {
     "start": "node server.js",
     "preinstall": "npm ls express sqlite3 cors || npm install express sqlite3 cors",
