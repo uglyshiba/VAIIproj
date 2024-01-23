@@ -2,8 +2,7 @@ const bcrypt = require("bcrypt");
 const express = require('express');
 const router = express.Router();
 
-const { requireLogin } = require('./databaseFunctions');
-const { runSelectQuery } = require('./databaseQueries');
+const { requireLogin, runSelectQuery } = require('./databaseFunctions');
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 

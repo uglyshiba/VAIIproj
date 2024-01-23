@@ -41,9 +41,11 @@
                 const loggedInUser = await checkLoginStatus();
 
                 if (loggedInUser && loggedInUser.id === userData.id) {
+                    // Display fields and buttons for editing the profile
                     const userProfileSettings = document.createElement('div');
                     userProfileSettings.className = 'user-profile-settings';
 
+                    // Add elements for username change
                     const changeUsernameSpan = document.createElement('span');
                     changeUsernameSpan.textContent = 'Change username';
                     const newNameInput = document.createElement('input');
@@ -56,7 +58,12 @@
                     userProfileSettings.appendChild(changeUsernameSpan);
                     userProfileSettings.appendChild(newNameInput);
                     userProfileSettings.appendChild(nameBtn);
-
+                    profileContainer.appendChild(userProfileSettings);
+                    // Add elements for email change
+                    const email = document.createElement('div');
+                    email.className = 'profile-container';
+                    const emailSettings = document.createElement('div');
+                    emailSettings.className = 'user-profile-settings';
                     const changeEmailSpan = document.createElement('span');
                     changeEmailSpan.textContent = 'Change email';
                     const newMailInput = document.createElement('input');
@@ -66,47 +73,59 @@
                     mailBtn.id = 'mailBtn';
                     mailBtn.textContent = 'Change email';
 
-                    userProfileSettings.appendChild(changeEmailSpan);
-                    userProfileSettings.appendChild(newMailInput);
-                    userProfileSettings.appendChild(mailBtn);
+                    emailSettings.appendChild(changeEmailSpan);
+                    emailSettings.appendChild(newMailInput);
+                    emailSettings.appendChild(mailBtn);
+                    email.appendChild(emailSettings);
+                    document.body.appendChild(email);
 
-                    const oldPasswordSpan = document.createElement('span');
-                    oldPasswordSpan.textContent = 'Old password';
-                    const pswdOldInput = document.createElement('input');
-                    pswdOldInput.type = 'text';
-                    pswdOldInput.id = 'pswdOld';
-                    const newPasswordSpan = document.createElement('span');
-                    newPasswordSpan.textContent = 'New password';
-                    const pswdNewInput = document.createElement('input');
-                    pswdNewInput.type = 'text';
-                    pswdNewInput.id = 'pswdNew';
-                    const retypePasswordSpan = document.createElement('span');
-                    retypePasswordSpan.textContent = 'Retype new password';
-                    const pswdAgainInput = document.createElement('input');
-                    pswdAgainInput.type = 'text';
-                    pswdAgainInput.id = 'pswdAgain';
-                    const passBtn = document.createElement('button');
-                    passBtn.className = 'passBtn';
-                    passBtn.id = 'passBtn';
-                    passBtn.textContent = 'Change password';
+                    const password = document.createElement('div');
+                    password.className = 'profile-container';
+                    const passwordSettings = document.createElement('div');
+                    passwordSettings.className = 'user-profile-settings';
+                    const oldSpan = document.createElement('span');
+                    oldSpan.textContent = "Old password";
+                    passwordSettings.appendChild(oldSpan);
+                    const oldInput = document.createElement('input');
+                    oldInput.type = "text";
+                    oldInput.id = "pswdOld";
+                    passwordSettings.appendChild(oldInput);
+                    const newSpan = document.createElement('span');
+                    newSpan.textContent = "New password";
+                    passwordSettings.appendChild(newSpan);
+                    const newInput = document.createElement('input');
+                    newInput.type = "text";
+                    newInput.id = "pswdNew";
+                    passwordSettings.appendChild(newInput);
+                    const againSpan = document.createElement('span');
+                    againSpan.textContent = "Retype password";
+                    passwordSettings.appendChild(againSpan);
+                    const againInput = document.createElement('input');
+                    againInput.type = "text";
+                    againInput.id = "pswdAgain";
+                    passwordSettings.appendChild(againInput);
+                    const passButton = document.createElement('button');
+                    passButton.className="passBtn";
+                    passButton.id = "passBtn";
+                    passButton.textContent = "Change password";
+                    passwordSettings.appendChild(passButton);
+                    password.appendChild(passwordSettings);
+                    document.body.appendChild(password);
 
-                    userProfileSettings.appendChild(oldPasswordSpan);
-                    userProfileSettings.appendChild(pswdOldInput);
-                    userProfileSettings.appendChild(newPasswordSpan);
-                    userProfileSettings.appendChild(pswdNewInput);
-                    userProfileSettings.appendChild(retypePasswordSpan);
-                    userProfileSettings.appendChild(pswdAgainInput);
-                    userProfileSettings.appendChild(passBtn);
 
+                    const del = document.createElement('div');
+                    del.className = "profile-container";
+                    const delSettings = document.createElement('div');
+                    delSettings.className = "user-profile-settings";
                     const deleteAccountBtn = document.createElement('button');
                     deleteAccountBtn.className = 'deleteBtn';
                     deleteAccountBtn.style.backgroundColor = 'darkred';
                     deleteAccountBtn.style.color = 'white';
                     deleteAccountBtn.textContent = 'Delete account';
+                    delSettings.appendChild(deleteAccountBtn);
+                    del.appendChild(delSettings);
+                    document.body.appendChild(del);
 
-                    userProfileSettings.appendChild(deleteAccountBtn);
-
-                    profileContainer.appendChild(userProfileSettings);
                 }
             } else {
                 console.error('Error fetching user profile:', response.statusText);

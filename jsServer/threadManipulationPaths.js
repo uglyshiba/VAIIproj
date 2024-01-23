@@ -2,14 +2,20 @@ const express = require('express');
 const router = express.Router();
 
 const requireLogin = require('./loginManipulationPaths');
-const { insertThreadQuery,  } = require('./databaseQueries');
+const { insertThreadQuery, insertCommentQuery } = require('./databaseQueries');
 const { runSelectQuery, runTransactionQuery, runChangeQuery } = require('./databaseFunctions');
 
-router.post('/create-thread', requireLogin, async(req, res) => {
-    const {threadName, threadText} = req.body;
-    try{
+router.post('/create-thread', requireLogin, async (req, res) => {
+    const { threadName, threadText } = req.body;
 
-        const {id: userId, user:username} = req.session.user;
+    try {
+        // Check if req.session.user exists before destructuring
+        if (!req.session.user) {
+            return res.status(401).json({ error: 'User is not logged in' });
+        }
+
+        const { id: userId } = req.session.user;
+
         await runTransactionQuery('BEGIN');
 
         const createThreadResult = await runChangeQuery(insertThreadQuery, [threadName, userId, userId]);
@@ -17,14 +23,13 @@ router.post('/create-thread', requireLogin, async(req, res) => {
         await runChangeQuery(insertCommentQuery, [threadText, userId, threadId]);
 
         await runTransactionQuery('COMMIT');
-        res.status(200).json({success: 'Thread created successfully'});
-
+        res.status(200).json({ success: 'Thread created successfully' });
     } catch (err) {
         console.error(err);
         await runTransactionQuery('ROLLBACK');
-        res.status(500).json({success: 'Failed to create thread'});
+        res.status(500).json({ error: 'Failed to create thread' });
     }
-})
+});
 
 router.get('/thread/:id', async (req, res) => {
     const page = parseInt(req.query.page);
