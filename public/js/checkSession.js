@@ -22,42 +22,48 @@ const checkLoginStatus = async () => {
 };
 
 const displayUserProfile = (userData) => {
-    const profileContainer = document.createElement('div');
-    profileContainer.id = 'profile-container';
-    profileContainer.style.backgroundColor = '#08adff';
+    const existingProfileContainer = document.getElementById("profile-container");
+    if(existingProfileContainer) {
+        existingProfileContainer.remove();
+    }
+    if(userData) {
+        const profileContainer = document.createElement('div');
+        profileContainer.id = 'profile-container';
+        profileContainer.style.backgroundColor = '#08adff';
 
-    const profileName = document.createElement('span');
-    profileName.textContent = `Welcome, ${userData.username}!`;
+        const profileName = document.createElement('span');
+        profileName.textContent = `Welcome, ${userData.username}!`;
 
-    const pfp = document.createElement('img');
-    pfp.src = 'data:image/jpeg;base64,' + userData.profilePicture.toString('base64');
+        const pfp = document.createElement('img');
+        pfp.src = 'data:image/jpeg;base64,' + userData.profilePicture.toString('base64');
 
-    const logoutButton = document.createElement('button');
-    logoutButton.textContent = 'Logout';
-    logoutButton.addEventListener('click', async () => {
-        const response = await fetch('http://localhost:3000/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include'
+        const logoutButton = document.createElement('button');
+        logoutButton.textContent = 'Logout';
+        logoutButton.addEventListener('click', async () => {
+            const response = await fetch('http://localhost:3000/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                window.location.reload();
+                console.log('Logout successful');
+            } else {
+                const data = await response.json();
+                console.log(data.error);
+            }
         });
 
-        if (response.ok) {
-            window.location.reload();
-            console.log('Logout successful');
-        } else {
-            const data = await response.json();
-            console.log(data.error);
-        }
-    });
+        profileContainer.appendChild(profileName);
+        profileContainer.appendChild(pfp);
+        profileContainer.appendChild(logoutButton);
 
-    profileContainer.appendChild(profileName);
-    profileContainer.appendChild(pfp);
-    profileContainer.appendChild(logoutButton);
-
-    const banner = document.getElementById('banner');
-    banner.parentNode.insertBefore(profileContainer, banner);
+        const banner = document.getElementById('banner');
+        banner.parentNode.insertBefore(profileContainer, banner);
+    }
 };
 
 export { checkLoginStatus, displayUserProfile };

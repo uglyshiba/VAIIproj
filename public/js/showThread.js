@@ -1,6 +1,6 @@
 import { checkLoginStatus, displayUserProfile } from './checkSession.js'
 
-function createCommentElement(comment) {
+function createCommentElement(comment, loginStatus) {
     const commentContainer = document.createElement('div');
     commentContainer.classList.add('comment-container');
 
@@ -9,9 +9,12 @@ function createCommentElement(comment) {
     dateCreated.textContent = comment.commentCreatedAt;
 
     const profilePicture = document.createElement('img');
-    //const blob = new Blob([user.profilePicture], { type: 'image/jpeg' });
-    profilePicture.src = 'data:image/jpeg;base64,' + comment.profilePicture.toString('base64');
-    // Add logic to set profile picture if needed
+
+    if (comment.profilePicture !== null) {
+        profilePicture.src = 'data:image/jpeg;base64,' + comment.profilePicture.toString('base64');
+    } else {
+        profilePicture.src = './resources/images/deleted_user_pfp.png';
+    }
 
     const name = document.createElement('div');
     name.classList.add('name');
@@ -26,16 +29,38 @@ function createCommentElement(comment) {
     commentContainer.appendChild(name);
     commentContainer.appendChild(commentText);
 
+    if (loginStatus && (loginStatus.id === comment.creatorId)) {
+        const buttonRow = document.createElement('div');
+        buttonRow.classList.add('button-row');
+
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Edit';
+        editButton.addEventListener('click', () => {
+            editComment(commentText, comment);
+        });
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', () => {
+            deleteComment(comment.threadId, comment.commentId);
+        });
+
+        buttonRow.appendChild(editButton);
+        buttonRow.appendChild(deleteButton);
+
+        commentContainer.appendChild(buttonRow);
+    }
+
     return commentContainer;
 }
 
 // Function to insert comments into the DOM
-function insertCommentsIntoDOM(comments) {
+function insertCommentsIntoDOM(comments, loginStatus) {
     const threadContainer = document.querySelector('.thread-container');
     threadContainer.innerHTML = '';
 
     comments.forEach(comment => {
-        const commentElement = createCommentElement(comment);
+        const commentElement = createCommentElement(comment, loginStatus);
         threadContainer.appendChild(commentElement);
     });
 }
@@ -46,22 +71,18 @@ function insertCommentsIntoDOM(comments) {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         await updatePage();
-        await createCommentControls();
     } catch (err) {
         console.error('Error:', err);
     }
 });
 
-async function createCommentControls() {
-
-    // Find or create the comment-controls container
+async function createCommentControls(loginStatus) {
     let commentControlsContainer = document.querySelector('.comment-controls');
     if (!commentControlsContainer) {
         commentControlsContainer = document.createElement('div');
         commentControlsContainer.classList.add('comment-controls');
         document.querySelector('.thread-container').appendChild(commentControlsContainer);
     }
-    const loginStatus = await checkLoginStatus();
 
     if (loginStatus) {
         console.log('createcommentc');
@@ -78,7 +99,6 @@ async function createCommentControls() {
         commentControlsContainer.appendChild(commentText);
         commentControlsContainer.appendChild(submitCommentBtn);
 
-        displayUserProfile(loginStatus);
     }
 }
 
@@ -87,7 +107,8 @@ async function submitComment() {
 
     if (commentText.trim() !== '') {
         try {
-            const threadId = 4;
+            const urlParams = new URLSearchParams(window.location.search);
+            const threadId = urlParams.get('threadId');
             const response = await fetch(`http://localhost:3000/thread/${threadId}/create-comment`, {
                 method: 'POST',
                 headers: {
@@ -123,8 +144,85 @@ async function updatePage() {
 
     if (data.success) {
         const comments = data.threadPath;
-        insertCommentsIntoDOM(comments);
+        const loginStatus = await checkLoginStatus();
+        displayUserProfile(loginStatus);
+        insertCommentsIntoDOM(comments, loginStatus);
+        await createCommentControls(loginStatus);
     } else {
         console.error('Error fetching comments:', data.error);
+    }
+}
+
+async function deleteComment(threadId, commentId) {
+    try {
+        const response = await fetch(`http://localhost:3000/thread/${threadId}/delete-comment/${commentId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log('Comment deleted successfully');
+            await updatePage();
+        } else {
+            console.error('Error deleting comment:', data.error);
+        }
+    } catch (err) {
+        console.error('Error deleting comment:', err);
+    }
+}
+
+function editComment(commentElement, comment) {
+
+    const commentId = comment.commentId;
+
+    const editingContainer = document.createElement('div');
+    editingContainer.classList.add('edit-box');
+
+    const textarea = document.createElement('textarea');
+    textarea.value = commentElement.textContent;
+
+
+    const updateButton = document.createElement('button');
+    updateButton.textContent = 'Submit Update';
+
+
+    updateButton.addEventListener('click', async () => {
+        const updatedText = textarea.value.trim();
+
+        if (updatedText !== '') {
+            await updateComment(comment.threadId, comment.commentId, updatedText);
+        }
+    });
+
+    editingContainer.appendChild(textarea);
+    editingContainer.appendChild(updateButton);
+
+    commentElement.innerHTML = '';
+    commentElement.appendChild(editingContainer);
+}
+
+async function updateComment(threadId, commentId, updatedText) {
+    try {
+        const response = await fetch(`http://localhost:3000/thread/${threadId}/update-comment/${commentId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ text: updatedText }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            console.log('Comment updated successfully');
+            await updatePage();
+        } else {
+            console.error('Error updating comment:', data.error);
+        }
+    } catch (err) {
+        console.error('Error updating comment:', err);
     }
 }

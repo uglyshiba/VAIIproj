@@ -145,10 +145,22 @@ const insertCommentQuery = `
     VALUES(?, CURRENT_TIMESTAMP, ?, ?)
 `;
 
+const createDeletedUser = `
+    INSERT OR IGNORE INTO user (id, username, password, profile_picture, is_admin)
+    VALUES('defaultUserId', 'Deleted User', 'donteventhinkaboutthatbuddy', NULL, 0)
+`;
+
 db.run(createTableUser, (err) => {
     if(err) {
         console.error(err);
     } else {
+        db.run(createDeletedUser, (err) => {
+            if(err) {
+                console.error(err);
+            } else {
+                console.log("Deleted user created successfully");
+            }
+        })
         console.log('Users table created succesfully');
     }
 })
@@ -263,7 +275,7 @@ app.post('/logout', requireLogin, (req, res) => {
 app.get('/check-login', requireLogin, async (req, res) => {
     try{
         const searchUserQuery = `
-        SELECT username, profile_picture FROM user
+        SELECT username, profile_picture, id FROM user
         WHERE id = ?
         `;
 
@@ -272,7 +284,8 @@ app.get('/check-login', requireLogin, async (req, res) => {
         if(searchUserResult.length > 0) {
             res.status(200).json({
                 username: searchUserResult[0].username,
-                profilePicture: searchUserResult[0].profile_picture.toString('base64')
+                profilePicture: searchUserResult[0].profile_picture.toString('base64'),
+                id: searchUserResult[0].id
             });
         } else {
             res.status(404).json({ error: 'During checking of login session, user was not found'});
@@ -334,6 +347,52 @@ app.post('/thread/:id/create-comment', requireLogin, async (req, res) => {
     }
 });
 
+app.put('/thread/:threadId/update-comment/:commentId', requireLogin, async (req, res) => {
+    const threadId = req.params.threadId;
+    const commentId = req.params.commentId;
+    const { text } = req.body;
+
+    try {
+        const userId = req.session.user.id;
+        await runTransactionQuery('BEGIN');
+        const updateCommentQuery = `
+            UPDATE comment
+            SET text = ?
+            WHERE id = ? AND creator = ? AND thread = ?;
+        `;
+        await runChangeQuery(updateCommentQuery, [text, commentId, userId, threadId]);
+        await runTransactionQuery('COMMIT');
+
+        res.status(200).json({ success: 'Comment updated successfully' });
+    } catch (err) {
+        console.error(err);
+        await runTransactionQuery('ROLLBACK');
+        res.status(500).json({ error: 'Failed to update comment' });
+    }
+});
+
+app.delete('/thread/:threadId/delete-comment/:commentId', requireLogin, async (req, res) => {
+    const threadId = req.params.threadId;
+    const commentId = req.params.commentId;
+
+    try {
+        const userId = req.session.user.id;
+        await runTransactionQuery('BEGIN');
+        const deleteCommentQuery = `
+            DELETE FROM comment
+            WHERE id = ? AND creator = ? AND thread = ?;
+        `;
+        await runChangeQuery(deleteCommentQuery, [commentId, userId, threadId]);
+        await runTransactionQuery('COMMIT');
+
+        res.status(200).json({ success: 'Comment deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        await runTransactionQuery('ROLLBACK');
+        res.status(500).json({ error: 'Failed to delete comment' });
+    }
+});
+
 app.get('/thread/:id', async (req, res) => {
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit);
@@ -359,12 +418,12 @@ app.get('/thread/:id', async (req, res) => {
         commentId: row.comment_id,
         text: row.text,
         commentCreatedAt: row.comment_created_at,
-        commentCreator: row.comment_creator,
+        creatorId: row.comment_creator,
         threadId: row.thread_id,
         title: row.title,
         threadCreatedAt: row.thread_created_at,
         creatorUsername: row.creator_username,
-        profilePicture: row.pfp.toString('base64')
+        profilePicture: row.pfp ? row.pfp.toString('base64') : null
     }));
 
     res.status(200).json({
@@ -468,6 +527,9 @@ app.get('/users/:username?', async (req, res) => {
 
     try{
         if(userId) {
+            if(userId === "defaultUserId") {
+                res.status(403).json({error: 'You should not have done that'});
+            }
             const getUserQuery = `
             SELECT user.id, user.username, email.email FROM user
             LEFT JOIN email ON user.id = email.user_id
@@ -511,14 +573,20 @@ app.delete('/users/:id', async (req, res) => {
     try{
         await runTransactionQuery('BEGIN TRANSACTION');
 
+        const updateCommentsQuery = `
+            UPDATE comment SET creator = 'defaultUserId' WHERE creator = ?;
+        `;
+        await runChangeQuery(updateCommentsQuery, [userId]);
+
+
         const deleteEmailQuery = `
-            DELETE FROM emails WHERE user_id = ?
+            DELETE FROM email WHERE user_id = ?
         `
 
         await runChangeQuery(deleteEmailQuery, [userId]);
 
         const deleteUserQuery = `
-            DELETE FROM users WHERE id = ?
+            DELETE FROM user WHERE id = ?
         `
 
         await runChangeQuery(deleteUserQuery, [userId]);
