@@ -70,6 +70,7 @@ async function registerUser() {
             if(res.ok) {
                 feedback.textContent="Registration successful!";
                 feedback.style.color = "green";
+                window.location.href = "index.html"
             } else {
                 const errorData = await res.json();
                 feedback.textContent = errorData.error;

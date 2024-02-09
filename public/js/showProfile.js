@@ -51,9 +51,14 @@
                     const newNameInput = document.createElement('input');
                     newNameInput.type = 'text';
                     newNameInput.id = 'newName';
+                    newNameInput.value = userData.username;
                     const nameBtn = document.createElement('button');
                     nameBtn.id = 'nameBtn';
                     nameBtn.textContent = 'Change username';
+                    nameBtn.addEventListener('click', function() {
+                        updateUsername(loggedInUser);
+                    });
+
 
                     userProfileSettings.appendChild(changeUsernameSpan);
                     userProfileSettings.appendChild(newNameInput);
@@ -69,6 +74,7 @@
                     const newMailInput = document.createElement('input');
                     newMailInput.type = 'text';
                     newMailInput.id = 'newMail';
+                    newMailInput.value = userData.email;
                     const mailBtn = document.createElement('button');
                     mailBtn.id = 'mailBtn';
                     mailBtn.textContent = 'Change email';
@@ -124,6 +130,12 @@
                     deleteAccountBtn.textContent = 'Delete account';
                     delSettings.appendChild(deleteAccountBtn);
                     del.appendChild(delSettings);
+                    deleteAccountBtn.addEventListener('click', () => {
+                        const confirmation = confirm("Are you sure you want to delete your account?");
+                        if (confirmation) {
+                            deleteUser(userData.username);
+                        }
+                    });
                     document.body.appendChild(del);
 
                 }
@@ -134,5 +146,127 @@
             console.error('Error displaying user profile page:', error);
         }
     };
+
+    function deleteUser(userName) {
+        fetch(`http://localhost:3000/users/${userName}`, {
+            method: 'DELETE',
+        }).then(res => {
+            if(res.ok) {
+                window.alert('User has been successfully deleted.')
+                window.location.href = 'index.html';
+                return res.json;
+            } else {
+                throw new Error('Error deleting user ' + res.json);
+            }
+        }).catch (err => {
+            console.error(err);
+        })
+    }
+
+
+    async function updateUsername(loggedInUser) {
+        const newUsername = document.getElementById("newName").value;
+        const currentUsername = loggedInUser.username;
+        if(newUsername === currentUsername) {
+            alert("New username cannot be same as the old one.");
+            return;
+        }
+        const isPassVerified = await(verifyPassword());
+        if(isPassVerified) {
+            const requestData = {
+                newUsername: newUsername
+            }
+            const updateRes = await fetch(`http://localhost:3000/update/${currentUsername}`, {
+                method: 'PUT',
+                body: JSON.stringify(requestData),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if(updateRes.ok) {
+                alert('Username update successfull');
+            }
+        } else {
+            console.log("Password verification failed. Update abort");
+        }
+    }
+    async function updateUser(username) {
+        const newUsername = document.getElementById("newName").value;
+        const newEmail = document.getElementById("newEmail").value;
+        const newPassword = document.getElementById("pswdNew").value;
+        const newPasswordAgain = document.getElementById("pswdAgain").value;
+
+        const feedback = document.getElementById("updateFeedback");
+        try{
+            const oldPass = prompt("Enter your current password:");
+            const res = await fetch('/users/verifyPassword', {
+                method: 'GET',
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: JSON.stringify({ oldPass: oldPass}),
+                credentials: 'include'
+            });
+            if(!res.ok) {
+                console.log("Password cannot be verified");
+                return;
+            }
+
+            if(newPassword && (newPassword !== newPasswordAgain)) {
+                feedback.textContent = "Passwords are not matching";
+                feedback.style.color = "red";
+            }
+
+            const requestData = {
+                username: newUsername,
+                email: newEmail,
+                password: newPassword,
+            };
+
+            const updateRes = await fetch(`/update/${username}`, {
+                method: 'PUT',
+                body: JSON.stringify(requestData),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if(updateRes.ok) {
+                feedback.textContent="Update successful!";
+                feedback.style.color = "green";
+            } else {
+                const errorData = await res.json();
+                feedback.textContent = errorData.error;
+                feedback.style.color = "red";
+            }
+        } catch (err){
+            console.error(err);
+        }
+    }
+
+    async function verifyPassword() {
+        try {
+            const oldPass = prompt('Enter your current password');
+            const res = await fetch('http://localhost:3000/users/verifyPassword', {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                },
+                body: JSON.stringify({ oldPass: oldPass }),
+                credentials: 'include'
+            });
+
+            if (!res.ok) {
+                console.log("Password cannot be verified");
+                return false;
+            }
+
+            return true;
+        } catch (err) {
+            console.error(err);
+            return false;
+        }
+    }
 
     document.addEventListener("DOMContentLoaded", displayUserProfilePage);

@@ -9,6 +9,7 @@ const sharp = require("sharp");
 
 const { insertUserQuery, insertEmailQuery,  } = require("./databaseQueries");
 const { runChangeQuery, runSelectQuery, runTransactionQuery } = require("./databaseFunctions");
+const {compare} = require("bcrypt");
 router.post('/register', upload.single('profilePicture'), async (req, res) => {
     const { username, password, email } = req.body;
     const profilePicture = req.file.buffer;
@@ -44,18 +45,22 @@ router.post('/register', upload.single('profilePicture'), async (req, res) => {
         }
     }
 });
-router.put('/update/:id', async(req, res) => {
-    const userId = req.params.id;
-    console.log(req.body);
-    const {username, email, password, profilePicture} = req.body;
+router.put('/update/:username', async(req, res) => {
+    const username = req.params.username;
+    const getIdQuery = `
+        SELECT id FROM user WHERE username = ?
+    `
+    const queryResult = await runSelectQuery(getIdQuery, [username]);
+
+    const {newUsername, email, password, profilePicture} = req.body;
     try{
         let updateUserQuery = 'UPDATE user SET';
         let updateEmailQuery = 'UPDATE email SET';
-        const whereUserQuery = `WHERE id = ${userId}`;
-        const whereEmailQuery = `WHERE user_id = ${userId}`;
+        const whereUserQuery = `WHERE id = "${queryResult[0].id}"`;
+        const whereEmailQuery = `WHERE user_id = "${queryResult[0].id}"`;
         let successMessage = '';
         if(username) {
-            updateUserQuery += ` username = '${username}' ,`;
+            updateUserQuery += ` username = '${newUsername}' ,`;
         }
         if(password) {
             updateUserQuery += ` password = '${password}' ,`;
@@ -152,12 +157,36 @@ router.get('/users/:username?', async (req, res) => {
     }
 })
 
-router.delete('/users/:id', async (req, res) => {
-    const userId = req.params.id;
+router.post('/users/verifyPassword', async (req, res) => {
+    const oldPass = req.body.oldPass;
+    if(oldPass) {
+        const getPassQuery = `
+            SELECT password FROM user WHERE id = ?
+        `
+        const queryResult = await runSelectQuery(getPassQuery, [req.session.user.id]);
+
+        const compareResult = await bcrypt.compare(oldPass, queryResult[0].password);
+        if(compareResult) {
+            res.status(200).json({success: 'Password successfully verified'});
+        } else {
+            res.status(401).json({error: 'Incorrect password'});
+        }
+    }
+})
+
+router.delete('/users/:username', async (req, res) => {
+    const username = req.params.username;
 
     try{
         await runTransactionQuery('BEGIN TRANSACTION');
-
+        const findUserQuery = `
+            SELECT id FROM user WHERE username = ?
+        `;
+        const queryResult  = await runSelectQuery(findUserQuery, [username]);
+        if(queryResult.length === 0) {
+            return res.status(404).json({ error: 'User not found during user deletion'});
+        }
+        const userId = queryResult[0].id;
         const updateCommentsQuery = `
             UPDATE comment SET creator = 'defaultUserId' WHERE creator = ?;
         `;

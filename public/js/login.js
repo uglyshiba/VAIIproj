@@ -24,6 +24,7 @@ async function loginUser() {
             });
 
             if(response.ok) {
+                window.location.href = 'index.html';
                 console.log('Login successful');
             } else {
                 const errorData = await response.json();
