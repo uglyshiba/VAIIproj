@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 console.log(data.success);
+                window.location.href = `showThread.html?threadId=${data.threadId}`;
             } else {
                 console.error(data.error);
             }

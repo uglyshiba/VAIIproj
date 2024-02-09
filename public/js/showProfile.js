@@ -1,5 +1,5 @@
     import { checkLoginStatus, displayUserProfile } from "./checkSession.js";
-
+    import {isPasswordValid, isMailValid} from "./formChecker.js";
     const displayUserProfilePage = async () => {
         try {
             const urlParams = new URLSearchParams(window.location.search);
@@ -78,6 +78,9 @@
                     const mailBtn = document.createElement('button');
                     mailBtn.id = 'mailBtn';
                     mailBtn.textContent = 'Change email';
+                    mailBtn.addEventListener('click', function() {
+                        updateEmail(loggedInUser);
+                    })
 
                     emailSettings.appendChild(changeEmailSpan);
                     emailSettings.appendChild(newMailInput);
@@ -114,6 +117,9 @@
                     passButton.className="passBtn";
                     passButton.id = "passBtn";
                     passButton.textContent = "Change password";
+                    passButton.addEventListener('click', function() {
+                        updatePassword(loggedInUser);
+                    })
                     passwordSettings.appendChild(passButton);
                     password.appendChild(passwordSettings);
                     document.body.appendChild(password);
@@ -191,6 +197,72 @@
             console.log("Password verification failed. Update abort");
         }
     }
+
+    async function updateEmail(loggedInUser) {
+        const newEmail = document.getElementById("newMail").value;
+        if(!isMailValid(newEmail)) {
+            return;
+        }
+
+        const currentUsername = loggedInUser.username;
+
+        const isPassVerified = await(verifyPassword());
+        if(isPassVerified) {
+            const requestData = {
+                newEmail: newEmail
+            }
+            const updateRes = await fetch(`http://localhost:3000/update/${currentUsername}`, {
+                method: 'PUT',
+                body: JSON.stringify(requestData),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if(updateRes.ok) {
+                alert('Email update successful');
+            }
+        } else {
+            console.log("Password verification failed. Update abort");
+        }
+    }
+
+    async function updatePassword(loggedInUser) {
+        const newPass = document.getElementById("pswdNew").value;
+        const newPassAgain = document.getElementById("pswdAgain").value;
+
+        if(newPass !== newPassAgain) {
+            alert("New password and retype password do not match");
+            return;
+        }
+
+        if(!isPasswordValid(newPass)) {
+            return;
+        }
+
+        const currentUsername = loggedInUser.username;
+
+        const isPassVerified = await(verifyPassword());
+        if(isPassVerified) {
+            const requestData = {
+                newPassword: newPass
+            }
+            const updateRes = await fetch(`http://localhost:3000/update/${currentUsername}`, {
+                method: 'PUT',
+                body: JSON.stringify(requestData),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if(updateRes.ok) {
+                alert('Email update successful');
+            }
+        } else {
+            console.log("Password verification failed. Update abort");
+        }
+    }
+
     async function updateUser(username) {
         const newUsername = document.getElementById("newName").value;
         const newEmail = document.getElementById("newEmail").value;

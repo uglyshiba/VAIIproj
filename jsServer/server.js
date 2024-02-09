@@ -3,7 +3,7 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 
 //const SQLiteStore = require('connect-sqlite3')(session);
-const { initializeDatabaseTables } = require('./initializeDatabase');
+const { initializeDatabaseTables, initializeAdmin } = require('./initializeDatabase');
 
 const userManipulationPaths = require('./userManipulationPaths');
 const loginManipulationPaths = require('./loginManipulationPaths');
@@ -44,11 +44,11 @@ app.options('*', (req, res) => {
 // Initialize database tables
 initializeDatabaseTables();
 
+
 app.use(userManipulationPaths);
 app.use(loginManipulationPaths);
 app.use(threadManipulationPaths);
 app.use(commentManipulationPaths);
-
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

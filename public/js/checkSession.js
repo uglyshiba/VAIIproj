@@ -33,7 +33,7 @@ const displayUserProfile = (userData) => {
 
         const profileName = document.createElement('a');
         profileName.textContent = `${userData.username}`;
-        // Set the href attribute to the user's profile page using the username
+
         profileName.href = `./showProfile.html?username=${userData.username}`;
 
         const pfp = document.createElement('img');

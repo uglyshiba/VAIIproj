@@ -25,7 +25,7 @@ router.post('/register', upload.single('profilePicture'), async (req, res) => {
             .toBuffer();
 
         const uid = uuid.v4();
-        const insertUser = await runChangeQuery(insertUserQuery, [uid, username, encryptedPassword, resizedImageBuffer]);
+        await runChangeQuery(insertUserQuery, [uid, username, encryptedPassword, resizedImageBuffer]);
         await runChangeQuery(insertEmailQuery, [email, uid]);
 
         await runTransactionQuery('COMMIT');
@@ -45,6 +45,29 @@ router.post('/register', upload.single('profilePicture'), async (req, res) => {
         }
     }
 });
+
+router.put('/update/:username/makeAdmin', async(req, res) => {
+    if(!req.session.is_admin) {
+        res.status(401).json({ error: 'Only admins can make others an admin'});
+    }
+
+    const username = req.params.username;
+
+    try{
+        const setAdminQuery = `
+            UPDATE user SET is_admin = 1 WHERE username = ?
+        `;
+        await runTransactionQuery('BEGIN TRANSACTION');
+        await runChangeQuery(setAdminQuery, [username]);
+        await runTransactionQuery('COMMIT');
+        res.status(200).json({ success: 'User is now an admin'});
+    } catch (err) {
+        await runTransactionQuery('ROLLBACK');
+        console.log('Error updating admin status', err)
+        res.status(500).json({error: "Error during setting admin"});
+    }
+})
+
 router.put('/update/:username', async(req, res) => {
     const username = req.params.username;
     const getIdQuery = `
@@ -52,24 +75,24 @@ router.put('/update/:username', async(req, res) => {
     `
     const queryResult = await runSelectQuery(getIdQuery, [username]);
 
-    const {newUsername, email, password, profilePicture} = req.body;
+    const {newUsername, newEmail, newPassword, profilePicture} = req.body;
     try{
         let updateUserQuery = 'UPDATE user SET';
         let updateEmailQuery = 'UPDATE email SET';
         const whereUserQuery = `WHERE id = "${queryResult[0].id}"`;
         const whereEmailQuery = `WHERE user_id = "${queryResult[0].id}"`;
         let successMessage = '';
-        if(username) {
+        if(newUsername) {
             updateUserQuery += ` username = '${newUsername}' ,`;
         }
-        if(password) {
-            updateUserQuery += ` password = '${password}' ,`;
+        if(newPassword) {
+            updateUserQuery += ` password = '${await encryptPassword(newPassword)}' ,`;
         }
         if(profilePicture) {
             updateUserQuery += ` profile_picture = '${profilePicture}' ,`;
         }
-        if(email) {
-            updateEmailQuery += ` email = '${email}' ,`;
+        if(newEmail) {
+            updateEmailQuery += ` email = '${newEmail}' ,`;
         }
 
         if(updateUserQuery.endsWith(',')) {
@@ -229,3 +252,4 @@ const encryptPassword = (password) => {
 }
 
 module.exports = router;
+module.exports.encryptPassword = encryptPassword;

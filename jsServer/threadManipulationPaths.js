@@ -9,7 +9,6 @@ router.post('/create-thread', requireLogin, async (req, res) => {
     const { threadName, threadText } = req.body;
 
     try {
-        // Check if req.session.user exists before destructuring
         if (!req.session.user) {
             return res.status(401).json({ error: 'User is not logged in' });
         }
@@ -23,7 +22,7 @@ router.post('/create-thread', requireLogin, async (req, res) => {
         await runChangeQuery(insertCommentQuery, [threadText, userId, threadId]);
 
         await runTransactionQuery('COMMIT');
-        res.status(200).json({ success: 'Thread created successfully' });
+        res.status(200).json({ success: 'Thread created successfully', threadId: threadId });
     } catch (err) {
         console.error(err);
         await runTransactionQuery('ROLLBACK');
@@ -88,7 +87,7 @@ router.get('/recent-threads', async (req, res) => {
                     LIMIT 1
             ) comments ON threads.id = comments.thread
                      LEFT JOIN user users ON comments.creator = users.id
-            ORDER BY threads.created_at DESC
+            ORDER BY threads.last_posted DESC
                 LIMIT 10;
         `;
 

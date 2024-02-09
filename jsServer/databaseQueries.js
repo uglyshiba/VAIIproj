@@ -1,3 +1,4 @@
+const {encryptPassword} = require('./userManipulationPaths');
 const createTableUser = `
     CREATE TABLE IF NOT EXISTS user (
         id TEXT PRIMARY KEY,
@@ -75,5 +76,5 @@ module.exports = {
     insertThreadQuery,
     createTableComment,
     insertCommentQuery,
-    createDeletedUser,
+    createDeletedUser
 };
