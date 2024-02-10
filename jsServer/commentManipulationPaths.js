@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { runTransactionQuery, runChangeQuery } = require('./databaseFunctions');
+const { runTransactionQuery, runChangeQuery, runSelectQuery} = require('./databaseFunctions');
 const { insertCommentQuery} = require('./databaseQueries');
 const requireLogin = require('./loginManipulationPaths');
 router.post('/thread/:id/create-comment', requireLogin, async (req, res) => {
@@ -59,15 +59,41 @@ router.put('/thread/:threadId/update-comment/:commentId', requireLogin, async (r
 router.delete('/thread/:threadId/delete-comment/:commentId', requireLogin, async (req, res) => {
     const threadId = req.params.threadId;
     const commentId = req.params.commentId;
-
+    let deleteCommentQuery;
     try {
-        const userId = req.session.user.id;
         await runTransactionQuery('BEGIN');
-        const deleteCommentQuery = `
-            DELETE FROM comment
-            WHERE id = ? AND creator = ? AND thread = ?;
+
+        if(req.session.user.isAdmin) {
+            deleteCommentQuery = `
+                DELETE FROM comment
+                WHERE id = ? AND thread = ?
+            `;
+            await runChangeQuery(deleteCommentQuery, [commentId, threadId]);
+        } else {
+            deleteCommentQuery = `
+                DELETE FROM comment
+                WHERE id = ? AND creator = ? AND thread = ?
+            `;
+            const userId = req.session.user.id;
+            await runChangeQuery(deleteCommentQuery, [commentId, userId, threadId]);
+        }
+
+        const lastUserPostedQuery = `
+            SELECT creator
+            FROM comment
+            WHERE thread = ?
+            ORDER BY created_at DESC
+            LIMIT 1
         `;
-        await runChangeQuery(deleteCommentQuery, [commentId, userId, threadId]);
+
+        const result = await runSelectQuery(lastUserPostedQuery, [threadId]);
+        const lastUserPosted = result.length > 0 ? result[0].creator : null;
+
+        const updateLastUserPostedQuery = `
+            UPDATE thread SET last_user_posted = ? WHERE id = ?
+        `
+        await runChangeQuery(updateLastUserPostedQuery, [lastUserPosted, threadId]);
+
         await runTransactionQuery('COMMIT');
 
         res.status(200).json({ success: 'Comment deleted successfully' });

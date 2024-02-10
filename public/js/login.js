@@ -18,7 +18,7 @@ async function loginUser() {
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                    username: username,
+                    username: username.toLowerCase(),
                     password: password
                 })
             });

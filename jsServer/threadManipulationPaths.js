@@ -77,16 +77,14 @@ router.get('/thread/:id', async (req, res) => {
 router.get('/recent-threads', async (req, res) => {
     try {
         const recentThreadsQuery = `
-            SELECT threads.id as threadId, threads.title as threadName,
-                   comments.text as lastCommentText, users.username as lastCommentCreator
+            SELECT threads.id AS threadId,
+                   threads.title AS threadName,
+                   comments.text AS lastCommentText,
+                   users.username AS lastCommentCreator
             FROM thread threads
-                     LEFT JOIN (
-                SELECT thread, text, creator
-                FROM comment
-                ORDER BY created_at DESC
-                    LIMIT 1
-            ) comments ON threads.id = comments.thread
+                     LEFT JOIN comment comments ON threads.id = comments.thread
                      LEFT JOIN user users ON comments.creator = users.id
+            GROUP BY threads.id
             ORDER BY threads.last_posted DESC
                 LIMIT 10;
         `;

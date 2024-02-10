@@ -29,15 +29,19 @@ function createCommentElement(comment, loginStatus) {
     commentContainer.appendChild(name);
     commentContainer.appendChild(commentText);
 
-    if (loginStatus && (loginStatus.id === comment.creatorId)) {
+    if ((loginStatus && (loginStatus.id === comment.creatorId)) || (loginStatus.is_admin)) {
         const buttonRow = document.createElement('div');
         buttonRow.classList.add('button-row');
 
-        const editButton = document.createElement('button');
-        editButton.textContent = 'Edit';
-        editButton.addEventListener('click', () => {
-            editComment(commentText, comment);
-        });
+        if(!loginStatus.is_admin || (loginStatus.is_admin && loginStatus.id === comment.creatorId)) {
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => {
+                editComment(commentText, comment);
+            });
+
+            buttonRow.appendChild(editButton);
+        }
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
@@ -45,7 +49,6 @@ function createCommentElement(comment, loginStatus) {
             deleteComment(comment.threadId, comment.commentId);
         });
 
-        buttonRow.appendChild(editButton);
         buttonRow.appendChild(deleteButton);
 
         commentContainer.appendChild(buttonRow);

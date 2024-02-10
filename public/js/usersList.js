@@ -53,19 +53,19 @@ function displayAllUsers(users) {
         userEmail.textContent = user.email;
         userEmail.classList.add('user-email');
 
-        const deleteButton = document.createElement('button');
-        deleteButton.classList.add('delete-button');
-        deleteButton.addEventListener('click', () => deleteUser(user.id));
-
-        const updateButton = document.createElement('button');
-        updateButton.classList.add('update-button');
-        updateButton.addEventListener('click', () => updateUser(user.id));
+        // const deleteButton = document.createElement('button');
+        // deleteButton.classList.add('delete-button');
+        // deleteButton.addEventListener('click', () => deleteUser(user.id));
+        //
+        // const updateButton = document.createElement('button');
+        // updateButton.classList.add('update-button');
+        // updateButton.addEventListener('click', () => updateUser(user.id));
 
         listItem.appendChild(pfp);
         listItem.appendChild(userName);
-        listItem.appendChild(userEmail);
-        listItem.appendChild(deleteButton);
-        listItem.appendChild(updateButton);
+        // listItem.appendChild(userEmail);
+        // listItem.appendChild(deleteButton);
+        // listItem.appendChild(updateButton);
         elUsersList.appendChild(listItem);
     })
 }

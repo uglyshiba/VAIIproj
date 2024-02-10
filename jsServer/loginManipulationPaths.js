@@ -45,7 +45,7 @@ router.post('/logout', requireLogin, (req, res) => {
 router.get('/check-login', requireLogin, async (req, res) => {
     try{
         const searchUserQuery = `
-        SELECT username, profile_picture, id FROM user
+        SELECT username, profile_picture, id, is_admin FROM user
         WHERE id = ?
         `;
 
@@ -54,7 +54,8 @@ router.get('/check-login', requireLogin, async (req, res) => {
         if (searchUserResult.length > 0) {
             const responseData = {
                 username: searchUserResult[0].username,
-                id: searchUserResult[0].id
+                id: searchUserResult[0].id,
+                is_admin: searchUserResult[0].is_admin
             };
 
             if (searchUserResult[0].profile_picture && searchUserResult[0].profile_picture.length > 0) {

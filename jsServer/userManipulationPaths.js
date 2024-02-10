@@ -46,7 +46,7 @@ router.post('/register', upload.single('profilePicture'), async (req, res) => {
 });
 
 router.put('/update/:username/makeAdmin', async(req, res) => {
-    if(!req.session.is_admin) {
+    if(!req.session.user.isAdmin) {
         res.status(401).json({ error: 'Only admins can make others an admin'});
     }
 
@@ -156,9 +156,12 @@ router.get('/users/:username?', async (req, res) => {
             }
         } else {
             const getAllUsersQuery = `
-                SELECT user.id, user.username, user.profile_picture, email.email FROM user
-                JOIN email ON user.id = email.user_id
+                SELECT username, profile_picture FROM user WHERE id != 'defaultUserId'
             `;
+            // const getAllUsersQuery = `
+            //     SELECT user.id, user.username, user.profile_picture, email.email FROM user
+            //     JOIN email ON user.id = email.user_id
+            // `;
 
             const allUsers = await runSelectQuery(getAllUsersQuery);
 

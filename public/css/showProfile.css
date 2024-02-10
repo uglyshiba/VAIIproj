@@ -1,18 +1,36 @@
+body{
+    overflow-x: hidden;
+}
 .profile-container {
     display:grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 20% 80%;
     gap: 10px;
     grid-auto-rows: minmax(100px, auto);
 }
 
+.profile-display {
+    display:grid;
+}
+
 .profile-picture {
+    width: auto;
     grid-column: 1;
     grid-row: 1;
+    margin:auto;
 }
 
 .profile-name {
     grid-column: 1;
     grid-row: 2;
+    margin:auto;
+    margin-top: 0;
+}
+
+.grant-admin-button{
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    background-color: #ffb700;
 }
 
 .user-profile-settings {
@@ -26,14 +44,15 @@
 
 .user-profile-settings span{
     grid-column: 1;
-    justify-self: center;
+    justify-self: right;
+
 }
 
 .user-profile-settings input {
-    width:100%;
+    width:80%;
     grid-column: 2;
     justify-self: center;
-    margin-right: 20%;
+    margin-right: 0;
     margin-bottom: 0;
 }
 
@@ -41,15 +60,14 @@
     grid-column: 2;
     grid-row: 2;
     justify-self: center;
-    margin-right: 20%;
     align-self: start;
 }
 
 .user-profile-settings .passBtn {
     grid-column: 2;
-    grid-row: 4;
+    grid-row: 3;
 }
 
 .user-profile-settings .deleteBtn {
-    width: 100%;
+    width: 80%;
 }

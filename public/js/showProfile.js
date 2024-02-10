@@ -18,7 +18,8 @@
 
                 const profileContainer = document.createElement('div');
                 profileContainer.className = 'profile-container';
-
+                const profileDisplay = document.createElement('div');
+                profileDisplay.className = 'profile-display';
                 const profilePicture = document.createElement('div');
                 profilePicture.className = 'profile-picture';
                 const pfp = document.createElement('img');
@@ -33,19 +34,17 @@
                 usernameSpan.textContent = userData.username;
                 profileName.appendChild(usernameSpan);
 
-                profileContainer.appendChild(profilePicture);
-                profileContainer.appendChild(profileName);
-
+                profileDisplay.appendChild(profilePicture);
+                profileDisplay.appendChild(profileName);
+                profileContainer.appendChild(profileDisplay);
                 document.body.appendChild(profileContainer);
 
                 const loggedInUser = await checkLoginStatus();
 
                 if (loggedInUser && loggedInUser.id === userData.id) {
-                    // Display fields and buttons for editing the profile
                     const userProfileSettings = document.createElement('div');
                     userProfileSettings.className = 'user-profile-settings';
 
-                    // Add elements for username change
                     const changeUsernameSpan = document.createElement('span');
                     changeUsernameSpan.textContent = 'Change username';
                     const newNameInput = document.createElement('input');
@@ -92,13 +91,13 @@
                     password.className = 'profile-container';
                     const passwordSettings = document.createElement('div');
                     passwordSettings.className = 'user-profile-settings';
-                    const oldSpan = document.createElement('span');
-                    oldSpan.textContent = "Old password";
-                    passwordSettings.appendChild(oldSpan);
-                    const oldInput = document.createElement('input');
-                    oldInput.type = "text";
-                    oldInput.id = "pswdOld";
-                    passwordSettings.appendChild(oldInput);
+                    // const oldSpan = document.createElement('span');
+                    // oldSpan.textContent = "Old password";
+                    // passwordSettings.appendChild(oldSpan);
+                    // const oldInput = document.createElement('input');
+                    // oldInput.type = "text";
+                    // oldInput.id = "pswdOld";
+                    // passwordSettings.appendChild(oldInput);
                     const newSpan = document.createElement('span');
                     newSpan.textContent = "New password";
                     passwordSettings.appendChild(newSpan);
@@ -144,6 +143,22 @@
                     });
                     document.body.appendChild(del);
 
+                } else if(loggedInUser && loggedInUser.is_admin) {
+                    const grantAdminButton = document.createElement('button');
+                    grantAdminButton.textContent = 'Make Admin';
+                    grantAdminButton.addEventListener('click', () => {
+                        fetch(`http://localhost:3000/update/${userData.username}/makeAdmin`, {
+                            method: 'PUT',
+                            credentials: "include"
+                        }).then(response => {
+                            if(response.ok) {
+                                alert('User is now an admin');
+                            } else {
+                                console.error(response.json().error);
+                            }
+                        })
+                    })
+                    profileContainer.appendChild(grantAdminButton);
                 }
             } else {
                 console.error('Error fetching user profile:', response.statusText);
@@ -192,6 +207,9 @@
 
             if(updateRes.ok) {
                 alert('Username update successfull');
+            } else {
+                const errorData = await updateRes.json();
+                alert(errorData.error);
             }
         } else {
             console.log("Password verification failed. Update abort");
@@ -221,6 +239,9 @@
 
             if(updateRes.ok) {
                 alert('Email update successful');
+            } else {
+                const errorData = await updateRes.json();
+                alert(errorData.error);
             }
         } else {
             console.log("Password verification failed. Update abort");
@@ -256,66 +277,69 @@
             });
 
             if(updateRes.ok) {
-                alert('Email update successful');
+                alert('Password update successful');
+            } else {
+                const errorData = await updateRes.json();
+                alert(errorData.error);
             }
         } else {
             console.log("Password verification failed. Update abort");
         }
     }
 
-    async function updateUser(username) {
-        const newUsername = document.getElementById("newName").value;
-        const newEmail = document.getElementById("newEmail").value;
-        const newPassword = document.getElementById("pswdNew").value;
-        const newPasswordAgain = document.getElementById("pswdAgain").value;
-
-        const feedback = document.getElementById("updateFeedback");
-        try{
-            const oldPass = prompt("Enter your current password:");
-            const res = await fetch('/users/verifyPassword', {
-                method: 'GET',
-                headers: {
-                    'Content-type': 'application/json',
-                },
-                body: JSON.stringify({ oldPass: oldPass}),
-                credentials: 'include'
-            });
-            if(!res.ok) {
-                console.log("Password cannot be verified");
-                return;
-            }
-
-            if(newPassword && (newPassword !== newPasswordAgain)) {
-                feedback.textContent = "Passwords are not matching";
-                feedback.style.color = "red";
-            }
-
-            const requestData = {
-                username: newUsername,
-                email: newEmail,
-                password: newPassword,
-            };
-
-            const updateRes = await fetch(`/update/${username}`, {
-                method: 'PUT',
-                body: JSON.stringify(requestData),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if(updateRes.ok) {
-                feedback.textContent="Update successful!";
-                feedback.style.color = "green";
-            } else {
-                const errorData = await res.json();
-                feedback.textContent = errorData.error;
-                feedback.style.color = "red";
-            }
-        } catch (err){
-            console.error(err);
-        }
-    }
+    // async function updateUser(username) {
+    //     const newUsername = document.getElementById("newName").value;
+    //     const newEmail = document.getElementById("newEmail").value;
+    //     const newPassword = document.getElementById("pswdNew").value;
+    //     const newPasswordAgain = document.getElementById("pswdAgain").value;
+    //
+    //     const feedback = document.getElementById("updateFeedback");
+    //     try{
+    //         const oldPass = prompt("Enter your current password:");
+    //         const res = await fetch('/users/verifyPassword', {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Content-type': 'application/json',
+    //             },
+    //             body: JSON.stringify({ oldPass: oldPass}),
+    //             credentials: 'include'
+    //         });
+    //         if(!res.ok) {
+    //             console.log("Password cannot be verified");
+    //             return;
+    //         }
+    //
+    //         if(newPassword && (newPassword !== newPasswordAgain)) {
+    //             feedback.textContent = "Passwords are not matching";
+    //             feedback.style.color = "red";
+    //         }
+    //
+    //         const requestData = {
+    //             username: newUsername,
+    //             email: newEmail,
+    //             password: newPassword,
+    //         };
+    //
+    //         const updateRes = await fetch(`/update/${username}`, {
+    //             method: 'PUT',
+    //             body: JSON.stringify(requestData),
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //         });
+    //
+    //         if(updateRes.ok) {
+    //             feedback.textContent="Update successful!";
+    //             feedback.style.color = "green";
+    //         } else {
+    //             const errorData = await res.json();
+    //             feedback.textContent = errorData.error;
+    //             feedback.style.color = "red";
+    //         }
+    //     } catch (err){
+    //         console.error(err);
+    //     }
+    // }
 
     async function verifyPassword() {
         try {

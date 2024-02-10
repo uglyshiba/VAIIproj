@@ -17,8 +17,8 @@ const createTableEmail = `
 `;
 
 const insertUserQuery = `
-    INSERT INTO user (id, username, password, profile_picture)
-    VALUES(?, ?, ?, ?)
+    INSERT INTO user (id, username, password, profile_picture, is_admin)
+    VALUES(?, ?, ?, ?, FALSE)
 `;
 
 const insertEmailQuery = `

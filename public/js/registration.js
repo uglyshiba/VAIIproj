@@ -1,7 +1,10 @@
+import {isPasswordValid, isMailValid} from "./formChecker.js";
+
 document.addEventListener('DOMContentLoaded', function () {
     const defaultProfilePicture = document.getElementById("registerProfilePicture");
     if(defaultProfilePicture) {
         defaultProfilePicture.src = resizeImage(defaultProfilePicture);
+        changeImage();
     }
 
     document.getElementById('registerButton').addEventListener("click", () => {
@@ -50,7 +53,12 @@ async function registerUser() {
     if(password !== passwordAgain) {
         feedback.textContent = "Passwords are not matching";
         feedback.style.color = "red";
-    } else {
+    } else if(!isPasswordValid(password)) {
+        return;
+    } else if(!isMailValid(email)) {
+        return;
+    }
+    else {
         try{
             let profilePicture = document.getElementById("customProfilePicture").files[0];
             if(!profilePicture) {
