@@ -51,12 +51,19 @@ router.get('/check-login', requireLogin, async (req, res) => {
 
         const searchUserResult = await runSelectQuery(searchUserQuery, [req.session.user.id])
 
-        if(searchUserResult.length > 0) {
-            res.status(200).json({
+        if (searchUserResult.length > 0) {
+            const responseData = {
                 username: searchUserResult[0].username,
-                profilePicture: searchUserResult[0].profile_picture.toString('base64'),
                 id: searchUserResult[0].id
-            });
+            };
+
+            if (searchUserResult[0].profile_picture && searchUserResult[0].profile_picture.length > 0) {
+                responseData.profilePicture = searchUserResult[0].profile_picture.toString('base64');
+            } else {
+                responseData.profilePicture = null;
+            }
+
+            res.status(200).json(responseData);
         } else {
             res.status(404).json({ error: 'During checking of login session, user was not found'});
         }

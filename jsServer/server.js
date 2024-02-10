@@ -3,13 +3,13 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 
 //const SQLiteStore = require('connect-sqlite3')(session);
-const { initializeDatabaseTables, initializeAdmin } = require('./initializeDatabase');
 
 const userManipulationPaths = require('./userManipulationPaths');
 const loginManipulationPaths = require('./loginManipulationPaths');
 const threadManipulationPaths = require('./threadManipulationPaths');
 const commentManipulationPaths = require('./commentManipulationPaths');
-
+const { initializeDatabaseTables } = require('./initializeDatabase');
+const { encryptPassword } = require('./userManipulationPaths');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -27,7 +27,7 @@ app.use(session({
     }
 }));
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:63344');
+    res.header('Access-Control-Allow-Origin', 'http://localhost:63342');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -42,14 +42,13 @@ app.options('*', (req, res) => {
 
 
 // Initialize database tables
-initializeDatabaseTables();
+initializeDatabaseTables(encryptPassword);
 
 
 app.use(userManipulationPaths);
 app.use(loginManipulationPaths);
 app.use(threadManipulationPaths);
 app.use(commentManipulationPaths);
-// Start the server
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });

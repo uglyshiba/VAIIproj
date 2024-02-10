@@ -1,4 +1,3 @@
-const {encryptPassword} = require('./userManipulationPaths');
 const createTableUser = `
     CREATE TABLE IF NOT EXISTS user (
         id TEXT PRIMARY KEY,
@@ -64,7 +63,12 @@ const insertCommentQuery = `
 
 const createDeletedUser = `
     INSERT OR IGNORE INTO user (id, username, password, profile_picture, is_admin)
-    VALUES('defaultUserId', 'Deleted User', 'donteventhinkaboutthatbuddy', NULL, 0)
+    VALUES('defaultUserId', 'Deleted User', 'donteventhinkaboutthatbuddy', ?, 0)
+`;
+
+const insertAdminQuery = `
+    INSERT OR IGNORE INTO user (id, username, password, profile_picture, is_admin)
+    VALUES('adminId', 'admin', ?, ?, 1)
 `;
 
 module.exports = {
@@ -76,5 +80,6 @@ module.exports = {
     insertThreadQuery,
     createTableComment,
     insertCommentQuery,
-    createDeletedUser
+    createDeletedUser,
+    insertAdminQuery
 };

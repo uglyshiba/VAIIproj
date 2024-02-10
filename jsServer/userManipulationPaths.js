@@ -9,7 +9,6 @@ const sharp = require("sharp");
 
 const { insertUserQuery, insertEmailQuery,  } = require("./databaseQueries");
 const { runChangeQuery, runSelectQuery, runTransactionQuery } = require("./databaseFunctions");
-const {compare} = require("bcrypt");
 router.post('/register', upload.single('profilePicture'), async (req, res) => {
     const { username, password, email } = req.body;
     const profilePicture = req.file.buffer;
