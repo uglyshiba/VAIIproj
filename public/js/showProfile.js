@@ -136,16 +136,18 @@
                     delSettings.appendChild(deleteAccountBtn);
                     del.appendChild(delSettings);
                     deleteAccountBtn.addEventListener('click', () => {
-                        const confirmation = confirm("Are you sure you want to delete your account?");
-                        if (confirmation) {
-                            deleteUser(userData.username);
-                        }
+                        deleteUser(userData.username);
                     });
                     document.body.appendChild(del);
 
                 } else if(loggedInUser && loggedInUser.is_admin) {
+                    const adminButtonsContainer = document.createElement('div');
+                    adminButtonsContainer.className = 'admin-buttons-container';
+                    profileContainer.appendChild(adminButtonsContainer);
                     const grantAdminButton = document.createElement('button');
                     grantAdminButton.textContent = 'Make Admin';
+                    grantAdminButton.style.backgroundColor = '#ffb700';
+                    grantAdminButton.className = 'grant-admin-button';
                     grantAdminButton.addEventListener('click', () => {
                         fetch(`http://localhost:3000/update/${userData.username}/makeAdmin`, {
                             method: 'PUT',
@@ -158,7 +160,17 @@
                             }
                         })
                     })
-                    profileContainer.appendChild(grantAdminButton);
+
+                    const deleteUserButton = document.createElement('button');
+                    deleteUserButton.className = 'admin-delete-user-button';
+                    deleteUserButton.textContent = 'Delete user';
+                    deleteUserButton.style.backgroundColor = 'darkred';
+                    deleteUserButton.addEventListener('click', function() {
+                        deleteUser(userData.username);
+                    })
+
+                    adminButtonsContainer.appendChild(grantAdminButton);
+                    adminButtonsContainer.appendChild(deleteUserButton);
                 }
             } else {
                 console.error('Error fetching user profile:', response.statusText);
@@ -169,19 +181,23 @@
     };
 
     function deleteUser(userName) {
-        fetch(`http://localhost:3000/users/${userName}`, {
-            method: 'DELETE',
-        }).then(res => {
-            if(res.ok) {
-                window.alert('User has been successfully deleted.')
-                window.location.href = 'index.html';
-                return res.json;
-            } else {
-                throw new Error('Error deleting user ' + res.json);
-            }
-        }).catch (err => {
-            console.error(err);
-        })
+        const confirmation = confirm("Are you sure you want to delete your account?");
+        if (confirmation) {
+            fetch(`http://localhost:3000/users/${userName}`, {
+                method: 'DELETE',
+                credentials: "include"
+            }).then(res => {
+                if(res.ok) {
+                    window.alert('User has been successfully deleted.')
+                    window.location.href = 'index.html';
+                    return res.json;
+                } else {
+                    throw new Error('Error deleting user ' + res.json);
+                }
+            }).catch (err => {
+                console.error(err);
+            })
+        }
     }
 
 

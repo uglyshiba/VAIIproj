@@ -26,12 +26,27 @@ body{
     margin-top: 0;
 }
 
+.admin-buttons-container {
+    display: grid;
+    margin-right: 10%;
+    place-items: center;
+}
+
 .grant-admin-button{
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
-    width: auto;
+    width: 50%;
     background-color: #ffb700;
 }
+
+.admin-delete-user-button {
+    grid-column: 1;
+    grid-row: 2;
+    width: 50%;
+    color: white;
+}
+
+
 
 .user-profile-settings {
     grid-column: 2;

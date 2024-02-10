@@ -201,7 +201,9 @@ router.post('/users/verifyPassword', async (req, res) => {
 
 router.delete('/users/:username', async (req, res) => {
     const username = req.params.username;
-
+    if(!req.session.user.isAdmin || req.session.user.username !== username) {
+        return res.status(401).json({ error: 'You do not have a permission to delete that user'});
+    }
     try{
         await runTransactionQuery('BEGIN TRANSACTION');
         const findUserQuery = `
