@@ -59,6 +59,7 @@ router.put('/update/:username/makeAdmin', async(req, res) => {
         await runTransactionQuery('BEGIN TRANSACTION');
         await runChangeQuery(setAdminQuery, [username]);
         await runTransactionQuery('COMMIT');
+
         res.status(200).json({ success: 'User is now an admin'});
     } catch (err) {
         await runTransactionQuery('ROLLBACK');
@@ -69,16 +70,20 @@ router.put('/update/:username/makeAdmin', async(req, res) => {
 
 router.put('/update/:username', upload.single('profilePicture'), async(req, res) => {
     const username = req.params.username;
+    let profilePicture;
+    let resizedImageBuffer;
+    if(req.file && req.file.buffer) {
+        profilePicture = req.file.buffer;
+        resizedImageBuffer = await sharp(profilePicture)
+            .resize({ width: 100, height: 100, fit: sharp.fit.inside })
+            .toBuffer();
+    }
     const getIdQuery = `
         SELECT id FROM user WHERE username = ?
     `
     const queryResult = await runSelectQuery(getIdQuery, [username]);
 
     const {newUsername, newEmail, newPassword} = req.body;
-    const profilePicture = req.file.buffer;
-    const resizedImageBuffer = await sharp(profilePicture)
-        .resize({ width: 100, height: 100, fit: sharp.fit.inside })
-        .toBuffer();
     try{
         let updateUserQuery = 'UPDATE user SET';
         let updateEmailQuery = 'UPDATE email SET';
@@ -86,6 +91,9 @@ router.put('/update/:username', upload.single('profilePicture'), async(req, res)
         const whereEmailQuery = `WHERE user_id = "${queryResult[0].id}"`;
         let successMessage = '';
         if(newUsername) {
+            if(req.session.user && req.session.user.username === username) {
+                req.session.user.username = newUsername;
+            }
             updateUserQuery += ` username = '${newUsername}' ,`;
         }
         if(newPassword) {
@@ -210,7 +218,7 @@ router.post('/users/verifyPassword', async (req, res) => {
 
 router.delete('/users/:username', async (req, res) => {
     const username = req.params.username;
-    if(!req.session.user.isAdmin || req.session.user.username !== username) {
+    if(!req.session.user.isAdmin && req.session.user.username !== username) {
         return res.status(401).json({ error: 'You do not have a permission to delete that user'});
     }
     try{

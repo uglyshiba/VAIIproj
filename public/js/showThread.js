@@ -134,10 +134,8 @@ async function submitComment() {
     }
 }
 
-async function updatePage() {
+async function updatePage(page = 1, limit = 10) {
     console.log('updating page');
-    const page = 1;
-    const limit = 10;
     const urlParams = new URLSearchParams(window.location.search);
     const threadId = urlParams.get('threadId');
     const response = await fetch(`http://localhost:3000/thread/${threadId}?page=${page}&limit=${limit}`, {
@@ -151,6 +149,12 @@ async function updatePage() {
         displayUserProfile(loginStatus);
         insertCommentsIntoDOM(comments, loginStatus);
         await createCommentControls(loginStatus);
+
+        const paginationControls = createPaginationControls(page, data.totalPages);
+        const paginationContainer = document.querySelector('.pagination-container');
+        paginationContainer.innerHTML = '';
+        paginationContainer.appendChild(paginationControls);
+
     } else {
         console.error('Error fetching comments:', data.error);
     }
@@ -228,4 +232,24 @@ async function updateComment(threadId, commentId, updatedText) {
     } catch (err) {
         console.error('Error updating comment:', err);
     }
+}
+
+function createPaginationControls(currentPage, totalPages) {
+    const paginationContainer = document.createElement('div');
+    paginationContainer.classList.add('pagination');
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageLink = document.createElement('span');
+        pageLink.textContent = i;
+        pageLink.classList.add('page-link');
+        if (i === currentPage) {
+            pageLink.classList.add('active'); // Highlight the current page
+        }
+        pageLink.addEventListener('click', () => {
+            updatePage(i);
+        });
+        paginationContainer.appendChild(pageLink);
+    }
+
+    return paginationContainer;
 }

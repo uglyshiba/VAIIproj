@@ -241,7 +241,9 @@
             });
 
             if(updateRes.ok) {
-                alert('Username update successfull');
+                alert('Username update successful');
+                const profileLink = `http://localhost:63342/VAIIfinal/public/showProfile.html?username=${newUsername}`;
+                window.location.href = profileLink;
             } else {
                 const errorData = await updateRes.json();
                 alert(errorData.error);

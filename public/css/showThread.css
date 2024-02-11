@@ -45,3 +45,16 @@
     height:fit-content;
     overflow-y: auto;
 }
+.page-link {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 5px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+.page-link.active {
+    font-weight: bold;
+    background-color: #ccc;
+}

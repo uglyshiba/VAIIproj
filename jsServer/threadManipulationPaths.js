@@ -37,6 +37,13 @@ router.get('/thread/:id', async (req, res) => {
     const offset = (page - 1) * limit;
     const threadId = req.params.id;
 
+    const countCommentsQuery = `
+        SELECT COUNT(*) AS total_comments
+        FROM comment c
+        JOIN thread t ON c.thread = t.id
+        WHERE t.id = ?
+    `
+
     const searchThreadQuery = `
             SELECT c.id as comment_id, c.text, c.created_at as comment_created_at, c.creator as comment_creator,
                 t.id as thread_id, t.title, t.created_at as thread_created_at,
@@ -46,12 +53,17 @@ router.get('/thread/:id', async (req, res) => {
                 JOIN user u ON c.creator = u.id
             WHERE t.id = ?
             ORDER BY c.created_at ASC
-            LIMIT 10 OFFSET ?;
+            LIMIT ? OFFSET ?;
     `;
 
     try {
-        const fetchThreadResult = await runSelectQuery(searchThreadQuery, [threadId, offset]);
+        const countCommentsResult = await runSelectQuery(countCommentsQuery, [threadId]);
+        const totalComments = countCommentsResult[0].total_comments;
+        const totalPages = Math.ceil(totalComments / limit);
+        const offset = (page - 1) * limit
 
+
+        const fetchThreadResult = await runSelectQuery(searchThreadQuery, [threadId, limit, offset]);
         const threadResult = fetchThreadResult.map(row => ({
             commentId: row.comment_id,
             text: row.text,
@@ -66,7 +78,8 @@ router.get('/thread/:id', async (req, res) => {
 
         res.status(200).json({
             success: 'Thread information retrieved successfully',
-            threadPath: threadResult
+            threadPath: threadResult,
+            totalPages: totalPages
         });
     } catch (err) {
         console.error(err);
