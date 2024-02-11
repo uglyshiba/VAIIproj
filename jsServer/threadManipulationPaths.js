@@ -19,7 +19,12 @@ router.post('/create-thread', requireLogin, async (req, res) => {
 
         const createThreadResult = await runChangeQuery(insertThreadQuery, [threadName, userId, userId]);
         const threadId = createThreadResult.lastID;
-        await runChangeQuery(insertCommentQuery, [threadText, userId, threadId]);
+        const createCommentResult = await runChangeQuery(insertCommentQuery, [threadText, userId, threadId]);
+        const insertCommentIntoThreadQuery = `
+            UPDATE thread SET last_comment = ? WHERE id = ?
+        `;
+
+        await runChangeQuery (insertCommentIntoThreadQuery, [createCommentResult.lastID, threadId]);
 
         await runTransactionQuery('COMMIT');
         res.status(200).json({ success: 'Thread created successfully', threadId: threadId });
@@ -90,16 +95,15 @@ router.get('/thread/:id', async (req, res) => {
 router.get('/recent-threads', async (req, res) => {
     try {
         const recentThreadsQuery = `
-            SELECT threads.id AS threadId,
-                   threads.title AS threadName,
-                   comments.text AS lastCommentText,
-                   users.username AS lastCommentCreator
-            FROM thread threads
-                     LEFT JOIN comment comments ON threads.id = comments.thread
-                     LEFT JOIN user users ON comments.creator = users.id
-            GROUP BY threads.id
-            ORDER BY threads.last_posted DESC
-                LIMIT 10;
+            SELECT t.id AS threadId,
+                   t.title AS threadName,
+                   c.text AS lastCommentText,
+                   u.username AS lastCommentCreator
+            FROM thread t
+                     LEFT JOIN comment c ON t.last_comment = c.id
+                     LEFT JOIN user u ON c.creator = u.id
+            GROUP BY t.id
+            ORDER BY t.last_posted DESC
         `;
 
         const recentThreads = await runSelectQuery(recentThreadsQuery);

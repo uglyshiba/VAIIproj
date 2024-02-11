@@ -36,8 +36,10 @@ const createTableThread = `
         last_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         creator TEXT,
         last_user_posted TEXT,
+        last_comment INTEGER,
         FOREIGN KEY (creator) REFERENCES user(id),
-        FOREIGN KEY (last_user_posted) REFERENCES user(id)
+        FOREIGN KEY (last_user_posted) REFERENCES user(id),
+        FOREIGN KEY (last_comment) REFERENCES comment(id)
         )
 `;
 

@@ -12,14 +12,15 @@ router.post('/thread/:id/create-comment', requireLogin, async (req, res) => {
         const userId = req.session.user.id;
         await runTransactionQuery('BEGIN');
         const insertCommentResult = await runChangeQuery(insertCommentQuery, [text, userId, threadId]);
-
+        const commentId = insertCommentResult.lastID;
         const updateThreadQuery = `
                 UPDATE thread
                 SET last_user_posted = ?,
-                    last_posted = CURRENT_TIMESTAMP
+                    last_posted = CURRENT_TIMESTAMP,
+                    last_comment = ?
                 WHERE id = ?;
             `;
-        await runChangeQuery(updateThreadQuery, [userId, threadId]);
+        await runChangeQuery(updateThreadQuery, [userId, commentId, threadId]);
 
         await runTransactionQuery('COMMIT');
 
@@ -88,12 +89,23 @@ router.delete('/thread/:threadId/delete-comment/:commentId', requireLogin, async
 
         const result = await runSelectQuery(lastUserPostedQuery, [threadId]);
         const lastUserPosted = result.length > 0 ? result[0].creator : null;
-
         const updateLastUserPostedQuery = `
             UPDATE thread SET last_user_posted = ? WHERE id = ?
         `
         await runChangeQuery(updateLastUserPostedQuery, [lastUserPosted, threadId]);
 
+        const lastCommentQuery = `
+            SELECT id FROM comment WHERE thread = ? 
+            ORDER BY created_at DESC
+            LIMIT 1
+        `;
+        const lastCommentResult = await runSelectQuery(lastCommentQuery, [threadId]);
+        const newCommentId = lastCommentResult.length > 0 ? lastCommentResult[0].id : null;
+        const updateLastCommentQuery = `
+            UPDATE thread SET last_comment = ? WHERE id = ?
+        `;
+
+        await runChangeQuery(updateLastCommentQuery, [newCommentId, threadId]);
         await runTransactionQuery('COMMIT');
 
         res.status(200).json({ success: 'Comment deleted successfully' });
