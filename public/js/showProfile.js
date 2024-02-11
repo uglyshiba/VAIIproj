@@ -1,5 +1,7 @@
     import { checkLoginStatus, displayUserProfile } from "./checkSession.js";
-    import {isPasswordValid, isMailValid} from "./formChecker.js";
+    import { isPasswordValid, isMailValid } from "./formChecker.js";
+    import {changeImage, resizeImage} from "./registration.js";
+
     const displayUserProfilePage = async () => {
         try {
             const urlParams = new URLSearchParams(window.location.search);
@@ -74,6 +76,7 @@
                     newMailInput.type = 'text';
                     newMailInput.id = 'newMail';
                     newMailInput.value = userData.email;
+
                     const mailBtn = document.createElement('button');
                     mailBtn.id = 'mailBtn';
                     mailBtn.textContent = 'Change email';
@@ -87,17 +90,31 @@
                     email.appendChild(emailSettings);
                     document.body.appendChild(email);
 
+                    const changeProfilePictureContainer = document.createElement('div');
+                    changeProfilePictureContainer.className = 'change-profile-picture-container';
+                    const uploadPictureButton = document.createElement('input');
+                    uploadPictureButton.className = 'upload-picture-button';
+                    uploadPictureButton.type = 'file';
+                    uploadPictureButton.accept = 'image/*';
+                    uploadPictureButton.onchange = function(event) {
+                        changeProfilePicture(uploadPictureButton, pfp);
+                    }
+                    const confirmPictureUploadButton = document.createElement('button');
+                    confirmPictureUploadButton.textContent = 'Upload new profile picture';
+                    confirmPictureUploadButton.className = 'confirm-picture-upload-button';
+                    confirmPictureUploadButton.addEventListener('click', function() {
+                        submitProfilePicture(uploadPictureButton, loggedInUser);
+                    })
+                    changeProfilePictureContainer.appendChild(uploadPictureButton);
+                    changeProfilePictureContainer.appendChild(confirmPictureUploadButton);
+                    email.appendChild(changeProfilePictureContainer);
+
+
                     const password = document.createElement('div');
                     password.className = 'profile-container';
                     const passwordSettings = document.createElement('div');
                     passwordSettings.className = 'user-profile-settings';
-                    // const oldSpan = document.createElement('span');
-                    // oldSpan.textContent = "Old password";
-                    // passwordSettings.appendChild(oldSpan);
-                    // const oldInput = document.createElement('input');
-                    // oldInput.type = "text";
-                    // oldInput.id = "pswdOld";
-                    // passwordSettings.appendChild(oldInput);
+
                     const newSpan = document.createElement('span');
                     newSpan.textContent = "New password";
                     passwordSettings.appendChild(newSpan);
@@ -105,6 +122,7 @@
                     newInput.type = "text";
                     newInput.id = "pswdNew";
                     passwordSettings.appendChild(newInput);
+
                     const againSpan = document.createElement('span');
                     againSpan.textContent = "Retype password";
                     passwordSettings.appendChild(againSpan);
@@ -112,6 +130,7 @@
                     againInput.type = "text";
                     againInput.id = "pswdAgain";
                     passwordSettings.appendChild(againInput);
+
                     const passButton = document.createElement('button');
                     passButton.className="passBtn";
                     passButton.id = "passBtn";
@@ -303,59 +322,32 @@
         }
     }
 
-    // async function updateUser(username) {
-    //     const newUsername = document.getElementById("newName").value;
-    //     const newEmail = document.getElementById("newEmail").value;
-    //     const newPassword = document.getElementById("pswdNew").value;
-    //     const newPasswordAgain = document.getElementById("pswdAgain").value;
-    //
-    //     const feedback = document.getElementById("updateFeedback");
-    //     try{
-    //         const oldPass = prompt("Enter your current password:");
-    //         const res = await fetch('/users/verifyPassword', {
-    //             method: 'GET',
-    //             headers: {
-    //                 'Content-type': 'application/json',
-    //             },
-    //             body: JSON.stringify({ oldPass: oldPass}),
-    //             credentials: 'include'
-    //         });
-    //         if(!res.ok) {
-    //             console.log("Password cannot be verified");
-    //             return;
-    //         }
-    //
-    //         if(newPassword && (newPassword !== newPasswordAgain)) {
-    //             feedback.textContent = "Passwords are not matching";
-    //             feedback.style.color = "red";
-    //         }
-    //
-    //         const requestData = {
-    //             username: newUsername,
-    //             email: newEmail,
-    //             password: newPassword,
-    //         };
-    //
-    //         const updateRes = await fetch(`/update/${username}`, {
-    //             method: 'PUT',
-    //             body: JSON.stringify(requestData),
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //         });
-    //
-    //         if(updateRes.ok) {
-    //             feedback.textContent="Update successful!";
-    //             feedback.style.color = "green";
-    //         } else {
-    //             const errorData = await res.json();
-    //             feedback.textContent = errorData.error;
-    //             feedback.style.color = "red";
-    //         }
-    //     } catch (err){
-    //         console.error(err);
-    //     }
-    // }
+    function changeProfilePicture(newProfilePicture, oldProfilePicture) {
+        // oldProfilePicture.src = resizeImage(newProfilePicture);
+        changeImage(newProfilePicture, oldProfilePicture);
+    }
+
+    async function submitProfilePicture(newProfilePicture, loggedInUser) {
+        const formData = new FormData();
+        if(!newProfilePicture.files[0]) {
+            alert('You must submit a file before changing your profile picture');
+            return;
+        }
+        formData.append('profilePicture', newProfilePicture.files[0]);
+
+        const updateProfilePictureRes = await fetch(`http://localhost:3000/update/${loggedInUser.username}`, {
+            method: 'PUT',
+            body: formData,
+            credentials: 'include'
+        });
+
+        if(updateProfilePictureRes.ok) {
+            alert('Profile picture updated successfully');
+        } else {
+            const errorData = await updateProfilePictureRes.json();
+            alert(errorData.error);
+        }
+    }
 
     async function verifyPassword() {
         try {

@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const defaultProfilePicture = document.getElementById("registerProfilePicture");
     if(defaultProfilePicture) {
         defaultProfilePicture.src = resizeImage(defaultProfilePicture);
-        changeImage();
+        changeImage(document.getElementById("customProfilePicture"), document.getElementById("registerProfilePicture") );
     }
 
     document.getElementById('registerButton').addEventListener("click", () => {
@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 
-function changeImage() {
-    const fileInput = document.getElementById("customProfilePicture");
-    const image = document.getElementById("registerProfilePicture");
+function changeImage(fileInput, image) {
+    // const fileInput = document.getElementById("customProfilePicture");
+    // const image = document.getElementById("registerProfilePicture");
 
     if (fileInput.files && fileInput.files[0]) {
         const blob = URL.createObjectURL(fileInput.files[0]);
@@ -89,3 +89,5 @@ async function registerUser() {
         }
     }
 }
+
+export { resizeImage, changeImage };

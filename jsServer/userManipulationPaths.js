@@ -67,14 +67,18 @@ router.put('/update/:username/makeAdmin', async(req, res) => {
     }
 })
 
-router.put('/update/:username', async(req, res) => {
+router.put('/update/:username', upload.single('profilePicture'), async(req, res) => {
     const username = req.params.username;
     const getIdQuery = `
         SELECT id FROM user WHERE username = ?
     `
     const queryResult = await runSelectQuery(getIdQuery, [username]);
 
-    const {newUsername, newEmail, newPassword, profilePicture} = req.body;
+    const {newUsername, newEmail, newPassword} = req.body;
+    const profilePicture = req.file.buffer;
+    const resizedImageBuffer = await sharp(profilePicture)
+        .resize({ width: 100, height: 100, fit: sharp.fit.inside })
+        .toBuffer();
     try{
         let updateUserQuery = 'UPDATE user SET';
         let updateEmailQuery = 'UPDATE email SET';
@@ -88,7 +92,12 @@ router.put('/update/:username', async(req, res) => {
             updateUserQuery += ` password = '${await encryptPassword(newPassword)}' ,`;
         }
         if(profilePicture) {
-            updateUserQuery += ` profile_picture = '${profilePicture}' ,`;
+            const setUserProfilePictureQuery = `
+                UPDATE user SET profile_picture = ? WHERE id = ?
+            `;
+            await runTransactionQuery('BEGIN TRANSACTION');
+            await runChangeQuery(setUserProfilePictureQuery, [resizedImageBuffer, queryResult[0].id]);
+            await runTransactionQuery('COMMIT');
         }
         if(newEmail) {
             updateEmailQuery += ` email = '${newEmail}' ,`;

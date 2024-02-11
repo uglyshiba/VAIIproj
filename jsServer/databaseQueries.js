@@ -21,6 +21,8 @@ const insertUserQuery = `
     VALUES(?, ?, ?, ?, FALSE)
 `;
 
+
+
 const insertEmailQuery = `
     INSERT INTO email (email, user_id)
     VALUES(?, ?)
