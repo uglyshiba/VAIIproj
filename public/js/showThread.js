@@ -100,7 +100,7 @@ async function createCommentControls(loginStatus) {
         submitCommentBtn.addEventListener('click', submitComment);
 
         commentControlsContainer.appendChild(commentText);
-        commentControlsContainer.appendChild(submitCommentBtn);
+        commentText.insertAdjacentElement('afterend', submitCommentBtn);
 
     }
 }

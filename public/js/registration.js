@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
         defaultProfilePicture.src = resizeImage(defaultProfilePicture);
         changeImage(document.getElementById("customProfilePicture"), document.getElementById("registerProfilePicture") );
     }
+    document.getElementById("customProfilePicture").addEventListener("change", handleImageChange);
 
     document.getElementById('registerButton').addEventListener("click", () => {
         registerUser();
@@ -61,9 +62,9 @@ async function registerUser() {
     else {
         try{
             let profilePicture = document.getElementById("customProfilePicture").files[0];
-            if(!profilePicture) {
-                profilePicture = document.getElementById("defaultProfilePicture").files[0];
-            }
+            // if(!profilePicture) {
+            //     profilePicture = document.getElementById("defaultProfilePicture").files[0];
+            // }
             const formData = new FormData();
             formData.append('username', username);
             formData.append('password', password);
@@ -88,6 +89,11 @@ async function registerUser() {
             console.error(err);
         }
     }
+}
+function handleImageChange(event) {
+    const fileInput = event.target;
+    const image = document.getElementById("registerProfilePicture");
+    changeImage(fileInput, image);
 }
 
 export { resizeImage, changeImage };

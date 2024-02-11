@@ -24,46 +24,13 @@
 </header>
 
 <main>
-<div class="thread-container">
-    <div class="thread">
-        <h2 class="thread-title">Thread 1</h2>
-        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
-    </div>
-    <div class="thread">
-        <h2 class="thread-title">Thread 2</h2>
-        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
-    </div>
-    <div class="thread">
-        <h2 class="thread-title">Thread 3</h2>
-        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
-    </div>
-    <div class="thread">
-        <h2 class="thread-title">Thread 4</h2>
-        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
-    </div>
-    <div class="thread">
-        <h2 class="thread-title">Thread 5</h2>
-        <p class="last-message">Last message: Lorem ipsum dolor sit amet...</p>
-    </div>
+<div class="thread-container" id="thread-container">
+
 </div>
 </main>
 <script>
     randomizeLetterColor("#nadpis");
 </script>
-<script type="module">
-    import { checkLoginStatus, displayUserProfile } from './js/checkSession.js';
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            const response = await checkLoginStatus();
-            //const loginLink = document.getElementById('login-link');
-
-            if (response) {
-                displayUserProfile(response);
-            }
-        } catch (err) {
-            console.error('Error checking login status:', err);
-        }
-    });
-</script>
+    <script src="./js/index.js" type="module"></script>
 </body>
 </html>

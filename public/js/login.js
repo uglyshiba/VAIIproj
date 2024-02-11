@@ -28,10 +28,13 @@ async function loginUser() {
                 console.log('Login successful');
             } else {
                 const errorData = await response.json();
+                alert(errorData.error);
                 console.error('Login failed: ', errorData.error);
             }
         } catch{
             console.error("Error during logging in");
         }
+    } else {
+        alert('You have to enter username and password');
     }
 }

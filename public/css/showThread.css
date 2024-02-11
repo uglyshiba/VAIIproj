@@ -8,7 +8,6 @@
     margin: 0 auto;
 }
 
-
 .comment-container {
     outline: #4b79e3 thick solid;
     display: grid;
@@ -31,24 +30,29 @@
     display:grid;
     place-items: center;
 }
+
+.write-comment-area {
+    display: grid;
+    grid-template-rows: 90% auto;
+    margin:10%;
+    width: 80%;
+    margin: 0 auto;
+}
 .comment-text .edit-box {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    margin: auto;
 }
 
 .edit-box textarea {
     width: 100%;
-    min-height:90%;
+    min-height:80%;
     height:fit-content;
     overflow-y: auto;
 }
 .page-link {
     display: inline-block;
     padding: 5px 10px;
-    margin: 5px;
+    margin: 20px;
     background-color: #f0f0f0;
     border: 1px solid #ccc;
     cursor: pointer;

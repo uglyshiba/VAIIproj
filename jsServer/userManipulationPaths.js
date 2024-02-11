@@ -6,22 +6,29 @@ const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 const bcrypt = require("bcrypt");
 const sharp = require("sharp");
-
+const fs = require("fs");
 const { insertUserQuery, insertEmailQuery,  } = require("./databaseQueries");
 const { runChangeQuery, runSelectQuery, runTransactionQuery } = require("./databaseFunctions");
 router.post('/register', upload.single('profilePicture'), async (req, res) => {
     const { username, password, email } = req.body;
-    const profilePicture = req.file.buffer;
+    let profilePicture;
+    let resizedImageBuffer;
+    if(req.file && req.file.buffer) {
+        profilePicture = req.file.buffer;
+    } else {
+        profilePicture = fs.readFileSync('./resources/default-pfp.jpg');
+    }
+
+    resizedImageBuffer = await sharp(profilePicture)
+        .resize({ width: 100, height: 100, fit: sharp.fit.inside })
+        .toBuffer();
+
     res.setHeader('Content-type', 'application/json');
 
     try {
         const encryptedPassword = await encryptPassword(password);
 
         await runTransactionQuery('BEGIN');
-
-        const resizedImageBuffer = await sharp(profilePicture)
-            .resize({ width: 100, height: 100, fit: sharp.fit.inside })
-            .toBuffer();
 
         const uid = uuid.v4();
         await runChangeQuery(insertUserQuery, [uid, username, encryptedPassword, resizedImageBuffer]);
